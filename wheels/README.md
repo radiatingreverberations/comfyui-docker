@@ -1,0 +1,1 @@
+# This folder is used to store downloaded wheels to save disk space in the actual Docker layer
