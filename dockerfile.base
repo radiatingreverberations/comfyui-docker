@@ -19,9 +19,8 @@ RUN --mount=type=cache,target=/cache \
 RUN --mount=type=cache,target=/cache \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
-    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128
-
-#     pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
+    pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
 
 # Install ComfyUI
 ARG COMFYUI_REF
@@ -29,8 +28,6 @@ ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz
 RUN mkdir -p /comfyui && \
     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
     rm -rf /tmp/comfyui.tar.gz
-
-WORKDIR /comfyui
 
 # Install ComfyUI version specific dependencies
 RUN --mount=type=cache,target=/cache \
