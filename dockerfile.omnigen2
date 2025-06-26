@@ -1,7 +1,5 @@
 FROM base-image
 
-# Download model weights
-
 # Install Omnigen2 extension
 ADD https://github.com/Yuan-ManX/ComfyUI-OmniGen2/archive/refs/heads/main.tar.gz /tmp/omnigen2.tar.gz
 RUN --mount=type=cache,target=/cache \
@@ -10,5 +8,5 @@ RUN --mount=type=cache,target=/cache \
     tar -xzf /tmp/omnigen2.tar.gz -C /comfyui/custom_nodes/ComfyUI-OmniGen2 --strip-components=1 && \
     . venv/bin/activate && \
     pip install -r /comfyui/custom_nodes/ComfyUI-OmniGen2/requirements.txt && \
-    pip install flash_attn && \
+    pip install flash_attn --no-build-isolation && \
     rm -rf /tmp/omnigen2.tar.gz
