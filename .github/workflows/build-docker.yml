@@ -53,8 +53,6 @@ jobs:
             ./docker-bake.hcl
           targets: |
             comfyui-base
-            comfyui-extensions
-            comfyui-omnigen2
           push: ${{ github.event_name != 'pull_request' }}
           set: |
             *.platform=linux/amd64
