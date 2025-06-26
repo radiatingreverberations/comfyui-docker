@@ -18,12 +18,14 @@ RUN mkdir -p /comfyui && \
 WORKDIR /comfyui
 
 # Install ComfyUI dependencies and HuggingFace hub utilities
-RUN python -m venv venv && \
+RUN --mount=type=cache,target=/cache \
+    export PIP_CACHE_DIR=/cache/pip && \
+    python -m venv venv && \
     . venv/bin/activate && \
-    pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir huggingface_hub[cli] huggingface_hub[hf_transfer]
+    pip install --upgrade pip setuptools wheel && \
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
+    pip install -r requirements.txt && \
+    pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
 
 EXPOSE 8188
 
