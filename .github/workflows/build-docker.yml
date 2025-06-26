@@ -40,8 +40,6 @@ jobs:
           . comfyui/venv/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
-          pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
-          pip install -r comfyui/requirements.txt
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
