@@ -62,6 +62,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug - List workspace contents
+        run: |
+          ls -la
+          ls -la comfyui/ || echo "comfyui directory not found"
+
       - name: Build and push Docker images
         uses: docker/bake-action@v6
         with:
