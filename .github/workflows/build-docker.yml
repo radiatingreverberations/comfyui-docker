@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker images
-        uses: docker/bake-action@v4
+        uses: docker/bake-action@v6
         with:
           files: |
             ./docker-bake.hcl
@@ -49,6 +49,6 @@ jobs:
           set: |
             *.platform=linux/amd64
             *.cache-from=type=local,src=/mnt/.buildx-cache
-            *.cache-to=type=local,dest=/mnt/.buildx-cache,mode=max
-          env: |
-            DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
+            *.cache-to=type=local,dest=/mnt/.buildx-cache
+          allow: |
+            fs=/mnt
