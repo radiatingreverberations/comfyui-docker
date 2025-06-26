@@ -60,6 +60,5 @@ jobs:
             *.platform=linux/amd64
             *.cache-from=type=local,src=/mnt/buildx-cache
             *.cache-to=type=local,dest=/mnt/buildx-cache
-            *.args.DOWNLOAD_DIR=./downloads
           allow: |
             fs=/mnt

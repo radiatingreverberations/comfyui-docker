@@ -1,4 +1,4 @@
-ARG NVIDIA_BASE_IMAGE=12.8.1-devel-ubuntu24.04
+ARG NVIDIA_BASE_IMAGE=12.8.1-runtime-ubuntu24.04
 FROM nvidia/cuda:${NVIDIA_BASE_IMAGE}
 
 # Install required native dependencies
@@ -15,30 +15,12 @@ RUN --mount=type=cache,target=/cache \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install --upgrade pip setuptools wheel
 
-# Download global dependencies outside of the image layer
-ARG DOWNLOAD_DIR=./wheels
-RUN --mount=type=cache,target=/cache \
-    --mount=type=bind,source=${DOWNLOAD_DIR},target=/wheels,rw \
-    . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    export TMPDIR=/wheels/tmp && \
-    echo "Hello" > /wheels/test.txt && \
-    mkdir -p /wheels/downloads && \
-    mkdir -p /wheels/tmp && \
-    df -h && \
-    pip download torch torchvision torchaudio \
-    --dest /wheels/downloads \
-    --extra-index-url https://download.pytorch.org/whl/cu128 && \
-    ls -l /wheels
-
 # Install global dependencies
 RUN --mount=type=cache,target=/cache \
-    --mount=type=bind,source=${DOWNLOAD_DIR},target=/wheels \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
-    export TMPDIR=/wheels/tmp && \
     df -h && \
-    pip install torch torchvision torchaudio --find-links /wheels/downloads && \
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
     pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
 
 # Install ComfyUI
