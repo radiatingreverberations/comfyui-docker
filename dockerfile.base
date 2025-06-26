@@ -8,6 +8,16 @@ RUN apt-get update && \
     && ln -s /usr/bin/python3.12 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
+# Install global dependencies
+RUN --mount=type=cache,target=/cache \
+    python -m venv venv && \
+    . venv/bin/activate && \
+    export PIP_CACHE_DIR=/cache/pip && \
+    df -h && \
+    pip install --upgrade pip setuptools wheel && \
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
+    pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
+
 # Install ComfyUI
 ARG COMFYUI_REF
 ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
@@ -17,15 +27,11 @@ RUN mkdir -p /comfyui && \
 
 WORKDIR /comfyui
 
-# Install ComfyUI dependencies and HuggingFace hub utilities
+# Install ComfyUI version specific dependencies
 RUN --mount=type=cache,target=/cache \
-    export PIP_CACHE_DIR=/cache/pip && \
-    python -m venv venv && \
     . venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel && \
-    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
-    pip install -r requirements.txt && \
-    pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
+    export PIP_CACHE_DIR=/cache/pip && \
+    pip install -r requirements.txt
 
 EXPOSE 8188
 
