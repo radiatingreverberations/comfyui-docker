@@ -1,0 +1,30 @@
+ARG NVIDIA_BASE_IMAGE=12.8.1-devel-ubuntu24.04
+FROM nvidia/cuda:${NVIDIA_BASE_IMAGE}
+
+# install Python 3.12
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3.12 python3.12-venv python3.12-dev python3-pip libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
+    && ln -s /usr/bin/python3.12 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ComfyUI
+ARG COMFYUI_REF
+ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
+RUN mkdir -p /comfyui && \
+    tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
+    rm -rf /tmp/comfyui.tar.gz
+
+WORKDIR /comfyui
+
+# Install ComfyUI dependencies and HuggingFace hub utilities
+RUN python -m venv venv && \
+    . venv/bin/activate && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir huggingface_hub[cli] huggingface_hub[hf_transfer]
+
+EXPOSE 8188
+
+CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto"]

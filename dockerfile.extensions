@@ -1,0 +1,9 @@
+FROM base-image
+
+# Install common ComfyUI extensions
+ADD https://github.com/kijai/ComfyUI-KJNodes/archive/refs/heads/main.tar.gz /tmp/kjnodes.tar.gz
+RUN mkdir -p ComfyUI/custom_nodes/ComfyUI-KJNodes && \
+    tar -xzf /tmp/kjnodes.tar.gz -C /comfyui/custom_nodes && \
+    . venv/bin/activate && \
+    pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI-KJNodes-main/requirements.txt && \
+    rm -rf /tmp/kjnodes.tar.gz
