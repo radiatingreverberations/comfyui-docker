@@ -22,22 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Install Python dependencies
-        run: |
-          mkdir -p comfyui
-          python -m venv comfyui/venv
-          . comfyui/venv/bin/activate
-          pip install --upgrade pip setuptools wheel
-          pip install torch --extra-index-url https://download.pytorch.org/whl/cu128
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Prepare build cache directory
         run: |
           sudo mkdir -p /mnt/buildx-cache
@@ -59,6 +43,9 @@ jobs:
       - name: Run docker directly
         run: |
           docker build -f dockerfile.base -t comfyui-test .
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker images
         uses: docker/bake-action@v6
