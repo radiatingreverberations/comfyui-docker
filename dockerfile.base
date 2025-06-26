@@ -20,9 +20,12 @@ RUN --mount=type=cache,target=/cache \
     --mount=type=bind,source=./wheels,target=/wheels,rw \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
+    export TMPDIR=/wheels/tmp && \
     echo "Hello" > /wheels/test.txt && \
+    mkdir -p /wheels/downloads && \
+    mkdir -p /wheels/tmp && \
     pip download torch torchvision torchaudio \
-    --dest /wheels \
+    --dest /wheels/downloads \
     --extra-index-url https://download.pytorch.org/whl/cu128 && \
     ls -l /wheels
 
@@ -31,8 +34,9 @@ RUN --mount=type=cache,target=/cache \
     --mount=type=bind,source=./wheels,target=/wheels \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
+    export TMPDIR=/wheels/tmp && \
     df -h && \
-    pip install torch torchvision torchaudio --find-links /wheels && \
+    pip install torch torchvision torchaudio --find-links /wheels/downloads && \
     pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
 
 # Install ComfyUI
