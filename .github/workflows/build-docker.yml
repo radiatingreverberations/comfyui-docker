@@ -67,6 +67,10 @@ jobs:
           ls -la
           ls -la comfyui/ || echo "comfyui directory not found"
 
+      - name: Run docker directly
+        run: |
+          docker build -f dockerfile.base -t comfyui-test .
+
       - name: Build and push Docker images
         uses: docker/bake-action@v6
         with:
