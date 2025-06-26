@@ -46,6 +46,6 @@ jobs:
           set: |
             *.platform=linux/amd64
             *.cache-from=type=local,src=.docker/cache
-            *.cache-to=type=local,dst=.docker/cache
+            *.cache-to=type=local,dest=.docker/cache,mode=max
           env: |
             DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
