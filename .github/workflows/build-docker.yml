@@ -28,6 +28,12 @@ jobs:
       - name: Check disk space
         run: df -h
 
+      - name: Prepare build cache directory
+        run: |
+          sudo mkdir -p /mnt/.buildx-cache
+          sudo chown $USER:$USER /mnt/.buildx-cache
+          echo "Build cache directory created at /mnt/.buildx-cache"
+
       - name: Log in to Container Registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
