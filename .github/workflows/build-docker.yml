@@ -30,9 +30,10 @@ jobs:
 
       - name: Prepare build cache directory
         run: |
-          sudo mkdir -p /mnt/.buildx-cache
-          sudo chown $USER:$USER /mnt/.buildx-cache
-          echo "Build cache directory created at /mnt/.buildx-cache"
+          sudo mkdir -p /mnt/buildx-cache
+          sudo chown $USER:$USER /mnt/buildx-cache
+          sudo mkdir -p /mnt/downloads
+          sudo chown $USER:$USER /mnt/downloads
 
       - name: Log in to Container Registry
         if: github.event_name != 'pull_request'
@@ -54,7 +55,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           set: |
             *.platform=linux/amd64
-            *.cache-from=type=local,src=/mnt/.buildx-cache
-            *.cache-to=type=local,dest=/mnt/.buildx-cache
+            *.cache-from=type=local,src=/mnt/buildx-cache
+            *.cache-to=type=local,dest=/mnt/buildx-cache
+            *.args=DOWNLOAD_DIR=/mnt/downloads
           allow: |
             fs=/mnt

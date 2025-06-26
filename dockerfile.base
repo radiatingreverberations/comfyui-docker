@@ -16,14 +16,16 @@ RUN --mount=type=cache,target=/cache \
     pip install --upgrade pip setuptools wheel
 
 # Download global dependencies outside of the image layer
+ARG DOWNLOAD_DIR=./wheels
 RUN --mount=type=cache,target=/cache \
-    --mount=type=bind,source=./wheels,target=/wheels,rw \
+    --mount=type=bind,source=${DOWNLOAD_DIR},target=/wheels,rw \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     export TMPDIR=/wheels/tmp && \
     echo "Hello" > /wheels/test.txt && \
     mkdir -p /wheels/downloads && \
     mkdir -p /wheels/tmp && \
+    df -h && \
     pip download torch torchvision torchaudio \
     --dest /wheels/downloads \
     --extra-index-url https://download.pytorch.org/whl/cu128 && \
@@ -31,7 +33,7 @@ RUN --mount=type=cache,target=/cache \
 
 # Install global dependencies
 RUN --mount=type=cache,target=/cache \
-    --mount=type=bind,source=./wheels,target=/wheels \
+    --mount=type=bind,source=${DOWNLOAD_DIR},target=/wheels \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     export TMPDIR=/wheels/tmp && \
