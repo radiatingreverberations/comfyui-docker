@@ -34,7 +34,9 @@ jobs:
           sudo chown $USER:$USER /mnt/buildx-cache
           sudo mkdir -p /mnt/downloads
           sudo chown $USER:$USER /mnt/downloads
-          sudo ln -s /mnt/downloads ~/downloads
+          sudo ln -s /mnt/downloads ${{ github.workspace }}/downloads
+          ls -l /mnt
+          ls -l ${{ github.workspace }}
 
       - name: Log in to Container Registry
         if: github.event_name != 'pull_request'
