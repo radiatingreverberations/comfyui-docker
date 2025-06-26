@@ -33,17 +33,17 @@ jobs:
       #- name: Set up Docker Buildx
       #  uses: docker/setup-buildx-action@v3
 
-      - name: Build docker manually
-        run: docker buildx bake comfyui-base
+      # - name: Build docker manually
+      #   run: docker buildx bake comfyui-base
 
-      # - name: Build base image
-      #   uses: docker/bake-action@v6
-      #   with:
-      #     files: |
-      #       ./docker-bake.hcl
-      #     targets: |
-      #       comfyui-base
-      #     push: ${{ github.event_name != 'pull_request' }}
-      #     set: |
-      #       *.platform=linux/amd64
-      #       *.output=type=oci,dest=/tmp/out.tar
+      - name: Build base image
+        uses: docker/bake-action@v6
+        with:
+          files: |
+            ./docker-bake.hcl
+          targets: |
+            comfyui-base
+          push: ${{ github.event_name != 'pull_request' }}
+          set: |
+            *.platform=linux/amd64
+            *.output=type=oci,dest=/tmp/out.tar
