@@ -48,7 +48,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           set: |
             *.platform=linux/amd64
-            *.cache-from=type=local,src=.docker/cache
-            *.cache-to=type=local,dest=.docker/cache,mode=max
+            *.cache-from=type=local,src=/mnt/.buildx-cache
+            *.cache-to=type=local,dest=/mnt/.buildx-cache,mode=max
           env: |
             DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
