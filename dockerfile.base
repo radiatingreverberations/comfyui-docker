@@ -23,12 +23,12 @@ RUN --mount=type=cache,target=/cache \
 
 #     pip install huggingface_hub[cli] huggingface_hub[hf_transfer]
 
-# # Install ComfyUI
-# ARG COMFYUI_REF
-# ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
-# RUN mkdir -p /comfyui && \
-#     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
-#     rm -rf /tmp/comfyui.tar.gz
+# Install ComfyUI
+ARG COMFYUI_REF
+ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
+RUN mkdir -p /comfyui && \
+    tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
+    rm -rf /tmp/comfyui.tar.gz
 
 WORKDIR /comfyui
 
