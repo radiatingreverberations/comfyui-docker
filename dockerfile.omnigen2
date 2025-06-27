@@ -13,6 +13,7 @@ RUN --mount=type=cache,target=/cache \
 
 # Add entrypoint script
 COPY entrypoint.omnigen2.sh entrypoint.omnigen2.sh
+RUN sed -i 's/\r$//' entrypoint.omnigen2.sh
 RUN chmod +x entrypoint.omnigen2.sh
 
 # Override the entrypoint script to fetch OmniGen2 model at launch

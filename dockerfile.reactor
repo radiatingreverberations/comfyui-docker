@@ -1,0 +1,23 @@
+FROM base-image
+
+# Install ReActor extension
+ADD https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.tar.gz /tmp/reactor.tar.gz
+RUN --mount=type=cache,target=/cache \
+    export PIP_CACHE_DIR=/cache/pip && \
+    mkdir -p /comfyui/custom_nodes/ComfyUI-ReActor && \
+    tar -xzf /tmp/reactor.tar.gz -C /comfyui/custom_nodes/ComfyUI-ReActor --strip-components=1 && \
+    . venv/bin/activate && \
+    pip install -r /comfyui/custom_nodes/ComfyUI-ReActor/requirements.txt && \
+    pip install onnxruntime && \
+    rm -rf /tmp/reactor.tar.gz
+
+# Add entrypoint script
+COPY entrypoint.reactor.sh entrypoint.reactor.sh
+RUN sed -i 's/\r$//' entrypoint.reactor.sh
+RUN chmod +x entrypoint.reactor.sh
+
+# The ReActor extension looks for models differently from how they are downloaded
+COPY modelpaths.reactor.yaml extra_model_paths.yaml
+
+# Override the entrypoint script to fetch ReActor models at launch
+ENTRYPOINT ["./entrypoint.reactor.sh"]

@@ -10,7 +10,7 @@ variable "COMFYUI_REF" {
 }
 
 group "default" {
-    targets = ["comfyui-base", "comfyui-extensions", "comfyui-omnigen2"]
+    targets = ["comfyui-base", "comfyui-extensions", "comfyui-omnigen2", "comfyui-reactor"]
 }
 
 target "comfyui-base" {
@@ -47,5 +47,17 @@ target "comfyui-omnigen2" {
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
     platforms  = ["linux/amd64"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
+    cache-to   = ["type=inline"]
+}
+
+target "comfyui-reactor" {
+    context    = "."
+    dockerfile = "dockerfile.reactor"
+    contexts = {
+        base-image = "target:comfyui-extensions"
+    }
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-reactor:latest"]
+    platforms  = ["linux/amd64"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-reactor:latest"]
     cache-to   = ["type=inline"]
 }

@@ -1,0 +1,6 @@
+comfyui:
+    base_path: /comfyui
+    ultralytics: /comfyui/models/reactor/models/detection
+    ultralytics_bbox: /comfyui/models/reactor/models/detection/bbox
+    ultralytics_segm: /comfyui/models/reactor/models/detection/segm
+    sams: /comfyui/models/reactor/models/sams
