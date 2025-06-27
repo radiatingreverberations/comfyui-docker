@@ -23,6 +23,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Pre-create BuildKit volume on /mnt
+        run: |
+          sudo mkdir -p /mnt/buildkit-state
+
+      - name: Create builder
+        run: |
+          docker buildx create \
+            --name ci \
+            --driver docker-container \
+            --buildkitd-flags '--config /etc/buildkit/buildkitd.toml' \
+            --driver-opt env.BUILDKITD_FLAGS="--config=/etc/buildkit/buildkitd.toml" \
+            --driver-opt "mount=type=bind,src=$PWD/.github/buildkitd.toml,target=/etc/buildkit/buildkitd.toml,readonly" \
+            --driver-opt "mount=type=bind,src=/mnt/buildkit,target=/mnt/buildkit" \
+            --use --bootstrap
+
       - name: Log in to Container Registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
