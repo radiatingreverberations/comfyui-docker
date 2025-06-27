@@ -9,6 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
 
 jobs:
   build:
@@ -50,5 +51,3 @@ jobs:
         uses: docker/bake-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          env: |
-            DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
