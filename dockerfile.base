@@ -54,8 +54,7 @@ RUN --mount=type=cache,target=/cache \
     pip install \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer] \
-    sageattention \
-    flash_attn
+    sageattention
 
 # Allow cache invalidation of ComfyUI version even if the ref has not changed
 ARG REFRESH_COMFYUI=0
@@ -75,4 +74,4 @@ RUN --mount=type=cache,target=/cache \
 
 EXPOSE 8188
 
-CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto --use-sage-attention --use-flash-attention"]
+CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto --use-sage-attention"]
