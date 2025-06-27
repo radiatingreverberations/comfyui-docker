@@ -22,8 +22,8 @@ target "comfyui-base" {
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:latest"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=gha"]
-    cache-to   = ["type=gha,mode=max"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:latest"]
+    cache-to   = ["type=inline"]
 }
 
 target "comfyui-extensions" {
@@ -34,8 +34,8 @@ target "comfyui-extensions" {
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=gha"]
-    cache-to   = ["type=gha,mode=max"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
+    cache-to   = ["type=inline"]
 }
 
 target "comfyui-omnigen2" {
@@ -46,6 +46,6 @@ target "comfyui-omnigen2" {
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=gha"]
-    cache-to   = ["type=gha,mode=max"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
+    cache-to   = ["type=inline"]
 }
