@@ -31,13 +31,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        if: github.event_name != 'pull_request'
         env:
           DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
-        run: docker buildx bake --push
-
-      - name: Build (PR only)
-        if: github.event_name == 'pull_request'
-        env:
-          DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
-        run: docker buildx bake
+          PUSH_FLAG: ${{ github.event_name != 'pull_request' && '--push' || '' }}
+        run: |
+          docker buildx bake comfyui-base $PUSH_FLAG
+          docker buildx prune -f
+          docker buildx bake comfyui-extensions $PUSH_FLAG
+          docker buildx prune -f
+          docker buildx bake comfyui-omnigen2 $PUSH_FLAG
