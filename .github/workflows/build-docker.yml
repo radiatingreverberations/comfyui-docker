@@ -47,8 +47,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        env:
-          DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
-          PUSH_FLAG: ${{ github.event_name != 'pull_request' && '--push' || '' }}
-        run: |
-          docker buildx bake $PUSH_FLAG
+        uses: docker/bake-action@v6
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          set: |
+            DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
