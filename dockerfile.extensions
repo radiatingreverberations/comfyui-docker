@@ -18,3 +18,12 @@ RUN --mount=type=cache,target=/cache \
     . venv/bin/activate && \
     pip install -r /comfyui/custom_nodes/ComfyUI-GGUF-main/requirements.txt && \
     rm -rf /tmp/gguf.tar.gz #so
+
+ADD https://github.com/welltop-cn/ComfyUI-TeaCache/archive/refs/heads/main.tar.gz /tmp/teacache.tar.gz
+RUN --mount=type=cache,target=/cache \
+    export PIP_CACHE_DIR=/cache/pip && \
+    mkdir -p ComfyUI/custom_nodes/ComfyUI-TeaCache && \
+    tar -xzf /tmp/teacache.tar.gz -C /comfyui/custom_nodes && \
+    . venv/bin/activate && \
+    pip install -r /comfyui/custom_nodes/ComfyUI-TeaCache-main/requirements.txt && \
+    rm -rf /tmp/teacache.tar.gz

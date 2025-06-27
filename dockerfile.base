@@ -38,16 +38,24 @@ RUN --mount=type=cache,target=/cache \
     sentencepiece \
     safetensors \
     pyyaml \
-    Pillow \
+    pillow \
     scipy \
     tqdm \
     psutil \
     kornia \
     spandrel \
     soundfile \
+    --extra-index-url https://download.pytorch.org/whl/cu128
+
+# Additional dependencies not strictly required by ComfyUI
+RUN --mount=type=cache,target=/cache \
+    . venv/bin/activate && \
+    export PIP_CACHE_DIR=/cache/pip && \
+    pip install \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer] \
-    --extra-index-url https://download.pytorch.org/whl/cu128
+    sageattention \
+    flash_attn
 
 # Allow cache invalidation of ComfyUI version even if the ref has not changed
 ARG REFRESH_COMFYUI=0
@@ -67,4 +75,4 @@ RUN --mount=type=cache,target=/cache \
 
 EXPOSE 8188
 
-CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto"]
+CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto --use-sage-attention --use-flash-attention"]
