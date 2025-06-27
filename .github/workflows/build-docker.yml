@@ -34,7 +34,7 @@ jobs:
             --driver docker-container \
             --buildkitd-flags '--config /etc/buildkit/buildkitd.toml' \
             --driver-opt env.BUILDKITD_FLAGS="--config=/etc/buildkit/buildkitd.toml" \
-            --driver-opt "mount=type=bind,src=$PWD/.github/buildkitd.toml,target=/etc/buildkit/buildkitd.toml,readonly" \
+            --driver-opt "mount=type=bind,src=$PWD/.github/buildkitd.toml,target=/etc/buildkit/buildkitd.toml,readonly=true" \
             --driver-opt "mount=type=bind,src=/mnt/buildkit,target=/mnt/buildkit" \
             --use --bootstrap
 
