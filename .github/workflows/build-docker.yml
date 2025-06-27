@@ -50,6 +50,4 @@ jobs:
           DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
           PUSH_FLAG: ${{ github.event_name != 'pull_request' && '--push' || '' }}
         run: |
-          docker buildx bake $PUSH_FLAG \
-          --set '*.cache-from=type=gha,scope=comfyui-cache' \
-          --set '*.cache-to=type=gha,mode=max,scope=comfyui-cache,github.token=${{ secrets.GITHUB_TOKEN }}'
+          docker buildx bake $PUSH_FLAG
