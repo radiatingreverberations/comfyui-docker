@@ -17,4 +17,4 @@ RUN --mount=type=cache,target=/cache \
     tar -xzf /tmp/gguf.tar.gz -C /comfyui/custom_nodes && \
     . venv/bin/activate && \
     pip install -r /comfyui/custom_nodes/ComfyUI-GGUF-main/requirements.txt && \
-    rm -rf /tmp/gguf.tar.gz
+    rm -rf /tmp/gguf.tar.gz #so
