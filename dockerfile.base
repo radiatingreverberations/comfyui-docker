@@ -74,4 +74,8 @@ RUN --mount=type=cache,target=/cache \
 
 EXPOSE 8188
 
-CMD ["/bin/bash", "-c", ". venv/bin/activate && python main.py --listen --preview-method auto --use-sage-attention"]
+# Add entrypoint script
+COPY entrypoint.base.sh entrypoint.base.sh
+RUN chmod +x entrypoint.base.sh
+
+ENTRYPOINT ["./entrypoint.base.sh"]
