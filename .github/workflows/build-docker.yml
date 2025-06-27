@@ -50,5 +50,5 @@ jobs:
         uses: docker/bake-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          set: |
-            DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
+          env: |
+            DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
