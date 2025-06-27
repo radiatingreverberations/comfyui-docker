@@ -39,5 +39,5 @@ jobs:
       - name: Build (PR only)
         if: github.event_name == 'pull_request'
         env:
-          DOCKER_REGISTRY_URL: "pr-only-"
+          DOCKER_REGISTRY_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/
         run: docker buildx bake
