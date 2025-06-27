@@ -20,9 +20,10 @@ target "comfyui-base" {
         NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
         COMFYUI_REF       = "${COMFYUI_REF}"
     }
-    tags      = ["${DOCKER_REGISTRY_URL}comfyui-base:latest"]
-    platforms = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:latest"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:latest"]
+    platforms  = ["linux/amd64"]
+    cache-from = ["type=gha"]
+    cache-to   = ["type=gha,mode=max"]
 }
 
 target "comfyui-extensions" {
@@ -31,9 +32,10 @@ target "comfyui-extensions" {
     contexts = {
         base-image = "target:comfyui-base"
     }
-    tags      = ["${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
-    platforms = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
+    platforms  = ["linux/amd64"]
+    cache-from = ["type=gha"]
+    cache-to   = ["type=gha,mode=max"]
 }
 
 target "comfyui-omnigen2" {
@@ -44,5 +46,6 @@ target "comfyui-omnigen2" {
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
+    cache-from = ["type=gha"]
+    cache-to   = ["type=gha,mode=max"]
 }
