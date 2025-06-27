@@ -53,5 +53,5 @@ jobs:
           files: |
             ./docker-bake.hcl
           set: |
-            *.args.DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}
+            *.args.DOCKER_REGISTRY_URL=${{ env.REGISTRY }}/${{ github.repository_owner }}/
             *.args.IMAGE_NAME=comfyui
