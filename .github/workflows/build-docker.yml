@@ -53,7 +53,7 @@ jobs:
       - name: Inject cache mount
         uses: reproducible-containers/buildkit-cache-dance@v2
         with:
-          cache-source: /mnt/bake-cache
+          cache-source: /mnt/bake-cache-root/cache
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -68,10 +68,10 @@ jobs:
         with:
           push: ${{ github.event_name != 'pull_request' }}
 
-      - name: Save bake cache
+      - name: Extract bake cache contents
         uses: reproducible-containers/buildkit-cache-dance@v2
         with:
-          cache-dest: /mnt/bake-cache
+          cache-dest: /mnt/bake-cache-root/cache
 
       - name: Save bake cache to GitHub
         uses: actions/cache@v4
