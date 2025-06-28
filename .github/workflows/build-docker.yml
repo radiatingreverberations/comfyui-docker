@@ -36,16 +36,12 @@ jobs:
           python -m venv venv
           . venv/bin/activate
           pip install --upgrade pip setuptools wheel ninja packaging
-
-          # nightly torch/cu128 for Python 3.12
-          pip install --pre torch torchvision torchaudio \
-            --index-url https://download.pytorch.org/whl/nightly/cu128
+          pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 
           git clone --depth 1 https://github.com/Dao-AILab/flash-attention.git
           cd flash-attention
 
-          MAX_JOBS=2 NVCC_THREADS=2 FLASH_ATTENTION_FORCE_BUILD=TRUE \
-            python setup.py bdist_wheel
+          MAX_JOBS=1 NVCC_THREADS=1 FLASH_ATTENTION_FORCE_BUILD=TRUE python setup.py bdist_wheel
 
       - uses: actions/upload-artifact@v4
         with:
@@ -53,6 +49,7 @@ jobs:
           path: flash-attention/dist/*.whl
 
   build:
+    needs: flash_attn
     runs-on: ubuntu-latest
     permissions:
       contents: read
