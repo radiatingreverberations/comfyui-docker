@@ -10,7 +10,7 @@ variable "COMFYUI_REF" {
 }
 
 group "default" {
-    targets = ["comfyui-base", "comfyui-extensions", "comfyui-omnigen2", "comfyui-reactor"]
+    targets = ["comfyui-base", "comfyui-extensions", "comfyui-reactor"]
 }
 
 target "comfyui-base" {
