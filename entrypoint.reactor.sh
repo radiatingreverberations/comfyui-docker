@@ -9,4 +9,4 @@ huggingface-cli download Gourieff/ReActor --local-dir models/reactor --repo-type
 huggingface-cli download Gourieff/ReActor --local-dir models/reactor --repo-type dataset --include "models/sams/*.pth"
 
 # Continue with original entrypoint
-./entrypoint.base.sh "$@"
+exec ./entrypoint.base.sh "$@"
