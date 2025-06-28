@@ -15,7 +15,7 @@ RUN apt-get update && \
 WORKDIR /comfyui
 
 # Allow cache invalidation of pip
-ARG REFRESH_PIP=1
+ARG REFRESH_PIP=0
 
 # Prepare the virtual environment
 RUN --mount=type=cache,target=/cache/pip,sharing=locked \
