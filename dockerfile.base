@@ -24,15 +24,18 @@ RUN --mount=type=cache,target=/cache \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install --upgrade pip setuptools wheel
 
-# Install common dependencies that are typically not ComfyUI version specific
+# Install torch nightly build
+RUN --mount=type=cache,target=/cache \
+    . venv/bin/activate && \
+    export PIP_CACHE_DIR=/cache/pip && \
+    pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+
+# Install other common dependencies that are typically not ComfyUI version specific
 RUN --mount=type=cache,target=/cache \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install \
-    torch \
     torchsde \
-    torchvision \
-    torchaudio \
     einops \
     tokenizers \
     sentencepiece \
@@ -44,8 +47,7 @@ RUN --mount=type=cache,target=/cache \
     psutil \
     kornia \
     spandrel \
-    soundfile \
-    --extra-index-url https://download.pytorch.org/whl/cu128
+    soundfile
 
 # Additional dependencies not strictly required by ComfyUI
 RUN --mount=type=cache,target=/cache \
@@ -72,6 +74,7 @@ RUN --mount=type=cache,target=/cache \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install -r requirements.txt
 
+# ComfyUI defaults to port 8188
 EXPOSE 8188
 
 # Add entrypoint script

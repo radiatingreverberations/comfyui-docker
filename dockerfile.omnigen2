@@ -1,4 +1,4 @@
-FROM base-image
+FROM comfyui-extensions
 
 # Install Omnigen2 extension
 ADD https://github.com/Yuan-ManX/ComfyUI-OmniGen2/archive/refs/heads/main.tar.gz /tmp/omnigen2.tar.gz
