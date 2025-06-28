@@ -38,10 +38,16 @@ jobs:
         with:
           name: ci
 
-      - name: Restore BuildKit state
-        uses: isac322/buildkit-state@v2
+      - name: Restore bake cache
+        uses: actions/cache@v4
         with:
-          buildx-name: ${{ steps.buildx.outputs.name }}
+          path: /mnt/bake-cache
+          key: ${{ runner.os }}-bake-cache-${{ hashFiles('dockerfile.base') }}
+
+      - name: Inject cache mount
+        uses: reproducible-containers/buildkit-cache-dance@v2
+        with:
+          cache-source: /mnt/bake-cache
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -55,6 +61,14 @@ jobs:
         uses: docker/bake-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+
+      - name: Save bake cache
+        uses: reproducible-containers/buildkit-cache-dance@v2
+        with:
+          cache-dest: /mnt/bake-cache
+
+      - name: Save bake cache to GitHub
+        uses: actions/cache@v4
+        with:
+          path: /mnt/bake-cache
+          key: ${{ runner.os }}-bake-cache-${{ hashFiles('dockerfile.base') }}
