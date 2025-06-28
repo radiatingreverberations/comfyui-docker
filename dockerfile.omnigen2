@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     . venv/bin/activate && \
     pip install ninja && \
     pip install -r /comfyui/custom_nodes/ComfyUI-OmniGen2/requirements.txt && \
-    MAX_JOBS=2 NVCC_THREADS=2 pip install flash_attn --use-pep517 --no-build-isolation -v && \
+    MAX_JOBS=1 NVCC_THREADS=2 pip install flash_attn --use-pep517 --no-build-isolation -v && \
     rm -rf /tmp/omnigen2.tar.gz
 
 # Add entrypoint script
