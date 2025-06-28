@@ -2,7 +2,7 @@ FROM comfyui-extensions
 
 # Install ReActor extension
 ADD https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.tar.gz /tmp/reactor.tar.gz
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     export PIP_CACHE_DIR=/cache/pip && \
     mkdir -p /comfyui/custom_nodes/ComfyUI-ReActor && \
     tar -xzf /tmp/reactor.tar.gz -C /comfyui/custom_nodes/ComfyUI-ReActor --strip-components=1 && \
