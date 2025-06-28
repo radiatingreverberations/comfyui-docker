@@ -12,6 +12,46 @@ env:
   DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
 
 jobs:
+  flash_attn:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: Jimver/cuda-toolkit@v0.2.25
+        with:
+          cuda: "12.8.0"
+          method: network
+          sub-packages: '["nvcc"]'
+      - name: Build Flash-Attention wheel
+        env:
+          PIP_CACHE_DIR: /home/runner/.cache/pip
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip setuptools wheel ninja packaging
+
+          # nightly torch/cu128 for Python 3.12
+          pip install --pre torch torchvision torchaudio \
+            --index-url https://download.pytorch.org/whl/nightly/cu128
+
+          git clone --depth 1 https://github.com/Dao-AILab/flash-attention.git
+          cd flash-attention
+
+          MAX_JOBS=2 NVCC_THREADS=2 FLASH_ATTENTION_FORCE_BUILD=TRUE \
+            python setup.py bdist_wheel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flash_attn
+          path: flash-attention/dist/*.whl
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -46,12 +86,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up swap space
-        if: runner.os == 'Linux'
-        uses: pierotofy/set-swap-space@v1.0
-        with:
-          swap-size-gb: 10
 
       - name: Build and Push
         uses: docker/bake-action@v6
