@@ -32,12 +32,16 @@ jobs:
             --opt o=bind \
             buildx_buildkit_ci0_state
 
-      - name: Set up Buildx
+      - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v3
         with:
           name: ci
-          driver: docker-container
-          use: true
+
+      - name: Restore BuildKit state
+        uses: isac322/buildkit-state@v2
+        with:
+          buildx-name: ${{ steps.buildx.outputs.name }}
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -51,3 +55,5 @@ jobs:
         uses: docker/bake-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
