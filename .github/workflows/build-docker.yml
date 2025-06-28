@@ -42,7 +42,6 @@ jobs:
         run: |
           sudo mkdir -p /mnt/bake-cache-root
           sudo chown $USER:$USER /mnt/bake-cache-root
-          mkdir -p /mnt/bake-cache-root/pip
 
       - name: Cache PIP packages
         uses: actions/cache@v4
