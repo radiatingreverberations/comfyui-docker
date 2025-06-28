@@ -1,4 +1,4 @@
-FROM base-image
+FROM comfyui-extensions
 
 # Install ReActor extension
 ADD https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.tar.gz /tmp/reactor.tar.gz

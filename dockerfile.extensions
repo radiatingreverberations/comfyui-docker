@@ -1,4 +1,4 @@
-FROM base-image
+FROM comfyui-base
 
 # Install common ComfyUI extensions
 ADD https://github.com/kijai/ComfyUI-KJNodes/archive/refs/heads/main.tar.gz /tmp/kjnodes.tar.gz
