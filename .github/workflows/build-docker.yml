@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /mnt/bake-cache-root/pip
-          key: ${{ runner.os }}-bake-cache-pip-${{ hashFiles('dockerfile.base') }}
+          key: ${{ runner.os }}-bake-cache-pip-torch-2.8.0dev20250627
 
       - name: Inject cache mount
         uses: reproducible-containers/buildkit-cache-dance@v2
