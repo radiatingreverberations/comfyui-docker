@@ -32,12 +32,28 @@ jobs:
             --opt o=bind \
             buildx_buildkit_ci0_state
 
-      - name: Set up Buildx
+      - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v3
         with:
           name: ci
-          driver: docker-container
-          use: true
+
+      - name: Create bake cache directories
+        run: |
+          sudo mkdir -p /mnt/bake-cache-root
+          sudo chown $USER:$USER /mnt/bake-cache-root
+
+      - name: Cache PIP packages
+        uses: actions/cache@v4
+        with:
+          path: /mnt/bake-cache-root/pip
+          key: ${{ runner.os }}-bake-cache-pip-torch-2.8.0dev20250627
+
+      - name: Inject cache mount
+        uses: reproducible-containers/buildkit-cache-dance@v2
+        with:
+          cache-source: /mnt/bake-cache-root/pip
+          cache-target: /cache/pip
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'

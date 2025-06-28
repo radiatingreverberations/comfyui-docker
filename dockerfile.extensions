@@ -2,7 +2,7 @@ FROM comfyui-base
 
 # Install common ComfyUI extensions
 ADD https://github.com/kijai/ComfyUI-KJNodes/archive/refs/heads/main.tar.gz /tmp/kjnodes.tar.gz
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     export PIP_CACHE_DIR=/cache/pip && \
     mkdir -p ComfyUI/custom_nodes/ComfyUI-KJNodes && \
     tar -xzf /tmp/kjnodes.tar.gz -C /comfyui/custom_nodes && \
@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/cache \
     rm -rf /tmp/kjnodes.tar.gz
 
 ADD https://github.com/city96/ComfyUI-GGUF/archive/refs/heads/main.tar.gz /tmp/gguf.tar.gz
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     export PIP_CACHE_DIR=/cache/pip && \
     mkdir -p ComfyUI/custom_nodes/ComfyUI-GGUF && \
     tar -xzf /tmp/gguf.tar.gz -C /comfyui/custom_nodes && \
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/cache \
     rm -rf /tmp/gguf.tar.gz #so
 
 ADD https://github.com/welltop-cn/ComfyUI-TeaCache/archive/refs/heads/main.tar.gz /tmp/teacache.tar.gz
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     export PIP_CACHE_DIR=/cache/pip && \
     mkdir -p ComfyUI/custom_nodes/ComfyUI-TeaCache && \
     tar -xzf /tmp/teacache.tar.gz -C /comfyui/custom_nodes && \

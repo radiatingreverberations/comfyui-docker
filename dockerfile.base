@@ -18,20 +18,20 @@ WORKDIR /comfyui
 ARG REFRESH_PIP=0
 
 # Prepare the virtual environment
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     python -m venv venv && \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install --upgrade pip setuptools wheel
 
 # Install torch nightly build
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 
 # Install other common dependencies that are typically not ComfyUI version specific
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install \
@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/cache \
     soundfile
 
 # Additional dependencies not strictly required by ComfyUI
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install \
@@ -69,7 +69,7 @@ RUN mkdir -p /comfyui && \
     rm -rf /tmp/comfyui.tar.gz
 
 # Install remaining ComfyUI version specific dependencies
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     . venv/bin/activate && \
     export PIP_CACHE_DIR=/cache/pip && \
     pip install -r requirements.txt

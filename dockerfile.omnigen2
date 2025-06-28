@@ -2,7 +2,7 @@ FROM comfyui-extensions
 
 # Install Omnigen2 extension
 ADD https://github.com/Yuan-ManX/ComfyUI-OmniGen2/archive/refs/heads/main.tar.gz /tmp/omnigen2.tar.gz
-RUN --mount=type=cache,target=/cache \
+RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     export PIP_CACHE_DIR=/cache/pip && \
     mkdir -p /comfyui/custom_nodes/ComfyUI-OmniGen2 && \
     tar -xzf /tmp/omnigen2.tar.gz -C /comfyui/custom_nodes/ComfyUI-OmniGen2 --strip-components=1 && \
