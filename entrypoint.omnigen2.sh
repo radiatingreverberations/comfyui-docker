@@ -8,4 +8,4 @@ source venv/bin/activate
 huggingface-cli download OmniGen2/OmniGen2 --local-dir models/omnigen2
 
 # Continue with original entrypoint
-./entrypoint.base.sh "$@"
+exec ./entrypoint.base.sh "$@"

@@ -5,4 +5,4 @@ set -e
 source venv/bin/activate
 
 # Start ComfyUI with the specified parameters
-python main.py --listen --preview-method auto --use-sage-attention "$@"
+exec python main.py --listen --preview-method auto --use-sage-attention "$@"
