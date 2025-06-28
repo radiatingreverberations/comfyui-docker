@@ -44,7 +44,7 @@ jobs:
           sudo chown $USER:$USER /mnt/bake-cache-root
           mkdir -p /mnt/bake-cache-root/cache
 
-      - name: Restore bake cache
+      - name: Configure bake cache
         uses: actions/cache@v4
         with:
           path: /mnt/bake-cache-root/cache
@@ -67,14 +67,3 @@ jobs:
         uses: docker/bake-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-
-      - name: Extract bake cache contents
-        uses: reproducible-containers/buildkit-cache-dance@v2
-        with:
-          cache-dest: /mnt/bake-cache-root/cache
-
-      - name: Save bake cache to GitHub
-        uses: actions/cache@v4
-        with:
-          path: /mnt/bake-cache-root/cache
-          key: ${{ runner.os }}-bake-cache-${{ hashFiles('dockerfile.base') }}
