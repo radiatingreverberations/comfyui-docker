@@ -2,14 +2,13 @@ FROM comfyui-extensions
 
 # Install Omnigen2 extension
 ADD https://github.com/Yuan-ManX/ComfyUI-OmniGen2/archive/refs/heads/main.tar.gz /tmp/omnigen2.tar.gz
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
-    export PIP_CACHE_DIR=/cache/pip && \
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     mkdir -p /comfyui/custom_nodes/ComfyUI-OmniGen2 && \
     tar -xzf /tmp/omnigen2.tar.gz -C /comfyui/custom_nodes/ComfyUI-OmniGen2 --strip-components=1 && \
     . venv/bin/activate && \
-    pip install ninja && \
-    pip install -r /comfyui/custom_nodes/ComfyUI-OmniGen2/requirements.txt && \
-    MAX_JOBS=1 NVCC_THREADS=1 pip install flash_attn --use-pep517 --no-build-isolation -v && \
+    uv pip install ninja wheel && \
+    uv pip install -r /comfyui/custom_nodes/ComfyUI-OmniGen2/requirements.txt && \
+    MAX_JOBS=1 NVCC_THREADS=2 uv pip install flash_attn --no-build-isolation -v && \
     rm -rf /tmp/omnigen2.tar.gz
 
 # Add entrypoint script
