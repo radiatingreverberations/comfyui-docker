@@ -17,6 +17,10 @@ RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
     mv uv /usr/local/bin/uv && \
     rm -rf /tmp/uv.tar.gz
 
+# Configure uv cache to work with Docker BuildKit cache
+ENV UV_CACHE_DIR=/cache/uv
+ENV UV_LINK_MODE=copy
+
 # Set app dir
 WORKDIR /comfyui
 
@@ -29,13 +33,11 @@ ARG TORCH_CHANNEL=/test
 ARG TORCH_CUDA_VERSION=cu128
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export UV_CACHE_DIR=/cache/uv && \
     uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl${TORCH_CHANNEL}/${TORCH_CUDA_VERSION}
 
 # Install other common dependencies that are typically not ComfyUI version specific
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export UV_CACHE_DIR=/cache/uv && \
     uv pip install \
     einops \
     tokenizers \
@@ -53,7 +55,6 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 # Additional dependencies not strictly required by ComfyUI
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export UV_CACHE_DIR=/cache/uv && \
     uv pip install \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer] \
@@ -72,7 +73,6 @@ RUN mkdir -p /comfyui && \
 # Install remaining ComfyUI version specific dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export UV_CACHE_DIR=/cache/uv && \
     uv pip install -r requirements.txt
 
 # ComfyUI defaults to port 8188
