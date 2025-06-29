@@ -7,7 +7,7 @@ ARG REFRESH_APT=0
 # Install required native dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    python3.12 python3.12-dev libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
+    python3.12 python3.12-dev build-essential libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
     && ln -s /usr/bin/python3.12 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
