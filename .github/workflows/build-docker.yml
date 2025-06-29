@@ -43,17 +43,17 @@ jobs:
           sudo mkdir -p /mnt/bake-cache-root
           sudo chown $USER:$USER /mnt/bake-cache-root
 
-      - name: Cache PIP packages
+      - name: Cache UV packages
         uses: actions/cache@v4
         with:
-          path: /mnt/bake-cache-root/pip
-          key: ${{ runner.os }}-bake-cache-pip-torch-2.8.0dev20250627
+          path: /mnt/bake-cache-root/uv
+          key: ${{ runner.os }}-bake-cache-uv-torch-2.8.0rc1
 
       - name: Inject cache mount
         uses: reproducible-containers/buildkit-cache-dance@v2
         with:
-          cache-source: /mnt/bake-cache-root/pip
-          cache-target: /cache/pip
+          cache-source: /mnt/bake-cache-root/uv
+          cache-target: /cache/uv
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'

@@ -2,13 +2,13 @@ FROM comfyui-extensions
 
 # Install ReActor extension
 ADD https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.tar.gz /tmp/reactor.tar.gz
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
-    export PIP_CACHE_DIR=/cache/pip && \
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    export UV_CACHE_DIR=/cache/uv && \
     mkdir -p /comfyui/custom_nodes/ComfyUI-ReActor && \
     tar -xzf /tmp/reactor.tar.gz -C /comfyui/custom_nodes/ComfyUI-ReActor --strip-components=1 && \
     . venv/bin/activate && \
-    pip install -r /comfyui/custom_nodes/ComfyUI-ReActor/requirements.txt && \
-    pip install onnxruntime && \
+    uv pip install -r /comfyui/custom_nodes/ComfyUI-ReActor/requirements.txt && \
+    uv pip install onnxruntime && \
     rm -rf /tmp/reactor.tar.gz
 
 # Add entrypoint script

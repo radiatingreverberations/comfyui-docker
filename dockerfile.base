@@ -7,35 +7,36 @@ ARG REFRESH_APT=0
 # Install required native dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    python3.12 python3.12-venv python3.12-dev python3-pip libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
+    python3.12 python3.12-dev libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
     && ln -s /usr/bin/python3.12 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+ADD https://github.com/astral-sh/uv/releases/download/0.7.16/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
+    mv uv /usr/local/bin/uv && \
+    rm -rf /tmp/uv.tar.gz
 
 # Set app dir
 WORKDIR /comfyui
 
-# Allow cache invalidation of pip
-ARG REFRESH_PIP=0
-
 # Prepare the virtual environment
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
-    python -m venv venv && \
-    . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    pip install --upgrade pip setuptools wheel
+RUN uv venv venv
 
-# Install torch nightly build
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
+# Install pytorch
+ARG TORCH_VERSION=2.8.0
+ARG TORCH_CHANNEL=/test
+ARG TORCH_CUDA_VERSION=cu128
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+    export UV_CACHE_DIR=/cache/uv && \
+    uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl${TORCH_CHANNEL}/${TORCH_CUDA_VERSION}
 
 # Install other common dependencies that are typically not ComfyUI version specific
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    pip install \
-    torchsde \
+    export UV_CACHE_DIR=/cache/uv && \
+    uv pip install \
     einops \
     tokenizers \
     sentencepiece \
@@ -50,10 +51,10 @@ RUN --mount=type=cache,target=/cache/pip,sharing=locked \
     soundfile
 
 # Additional dependencies not strictly required by ComfyUI
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    pip install \
+    export UV_CACHE_DIR=/cache/uv && \
+    uv pip install \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer] \
     sageattention
@@ -62,17 +63,17 @@ RUN --mount=type=cache,target=/cache/pip,sharing=locked \
 ARG REFRESH_COMFYUI=0
 
 # Install ComfyUI
-ARG COMFYUI_REF
+ARG COMFYUI_REF=heads/master
 ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
 RUN mkdir -p /comfyui && \
     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
     rm -rf /tmp/comfyui.tar.gz
 
 # Install remaining ComfyUI version specific dependencies
-RUN --mount=type=cache,target=/cache/pip,sharing=locked \
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    export PIP_CACHE_DIR=/cache/pip && \
-    pip install -r requirements.txt
+    export UV_CACHE_DIR=/cache/uv && \
+    uv pip install -r requirements.txt
 
 # ComfyUI defaults to port 8188
 EXPOSE 8188
