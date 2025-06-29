@@ -3,7 +3,7 @@ variable "DOCKER_REGISTRY_URL" {
     default = ""
 }
 variable "NVIDIA_BASE_IMAGE" {
-    default = "12.8.1-devel-ubuntu24.04"
+    default = "12.8.1-runtime-ubuntu24.04"
 }
 variable "COMFYUI_REF" {
     default = "heads/master"
