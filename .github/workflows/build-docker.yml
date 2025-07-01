@@ -1,16 +1,20 @@
 name: Build and Push Docker Images
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      comfyui_ref:
+        description: "ComfyUI branch or tag to build from"
+        required: true
+        type: string
+      image_label:
+        description: "Label to apply to the built image"
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
   DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
-  COMFYUI_REF: master
 
 jobs:
   build:
@@ -67,7 +71,7 @@ jobs:
       - name: Fetch ComfyUI commit SHA
         id: comfyui_ref
         run: |
-          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git $COMFYUI_REF | cut -f1)
+          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
           echo "sha=$sha" >> $GITHUB_OUTPUT
 
       - name: Build and Push
@@ -75,5 +79,5 @@ jobs:
         with:
           push: ${{ github.event_name != 'pull_request' }}
           set: |
-            *.labels.comfyui.ref=${{ env.COMFYUI_REF }}
+            *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
             *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}
