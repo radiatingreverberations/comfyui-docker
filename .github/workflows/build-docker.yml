@@ -15,6 +15,8 @@ on:
 env:
   REGISTRY: ghcr.io
   DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
+  IMAGE_LABEL: ${{ inputs.image_label }}
+  COMFYUI_VERSION: ${{ inputs.comfyui_ref }}
 
 jobs:
   build:
