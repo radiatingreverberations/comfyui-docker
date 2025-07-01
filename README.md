@@ -1,4 +1,4 @@
-# Docker images with various ComfyUI custom nodes and dependencies preinstalled
+# ComfyUI Prebuilt Docker Images
 
 This repository provides Docker build configurations that package ComfyUI together with all prerequisites, in a few different flavors. It also contains GitHub Actions definitions that can build and publish them to the GitHub Container Registry.
 
@@ -6,6 +6,10 @@ This repository provides Docker build configurations that package ComfyUI togeth
 
 * Running on a GPU cloud provider like [RunPod](https://www.runpod.io/), [QuickPod](https://quickpod.io/), [Vast.ai](https://vast.ai/) or [TensorDock](https://tensordock.com/).
 * Running locally in a stable and isolated environment.
+
+## Motivation
+
+The images are ready-to-run with all necessary dependencies already installed. This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
 
 ## Available Images
 
@@ -57,9 +61,11 @@ If your favorite custom nodes are missing from the installation, it is possible 
 
 ### Windows specific notes
 
-When running Docker images on Windows, they most likely run on Linux in WSL2. This means that it cannot access the Windows file systems directly, but has to use [drvfs](https://wsl.dev/technical-documentation/drvfs/). This can make models take longer to load. The workaround is to put such files on a Linux file system directly inside WSL2.
+When running Docker images on Windows, it most likely runs on a Linux VM under WSL2. This means that they cannot access the Windows file systems directly, but have to use [drvfs](https://wsl.dev/technical-documentation/drvfs/). This can make models take longer to load. The workaround is to put such files on a Linux file system directly inside WSL2.
 
 ## Building
+
+Instead of using the pre-built images it is also possible to build them locally.
 
 ```shell
 docker buildx bake

@@ -64,8 +64,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 ARG REFRESH_COMFYUI=0
 
 # Install ComfyUI
-ARG COMFYUI_REF=heads/master
-ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/${COMFYUI_REF}.tar.gz /tmp/comfyui.tar.gz
+ARG COMFYUI_VERSION=refs/heads/master
+ADD https://github.com/comfyanonymous/ComfyUI/archive/${COMFYUI_VERSION}.tar.gz /tmp/comfyui.tar.gz
 RUN mkdir -p /comfyui && \
     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
     rm -rf /tmp/comfyui.tar.gz

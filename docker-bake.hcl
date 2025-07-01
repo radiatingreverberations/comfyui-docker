@@ -5,8 +5,8 @@ variable "DOCKER_REGISTRY_URL" {
 variable "NVIDIA_BASE_IMAGE" {
     default = "12.8.1-runtime-ubuntu24.04"
 }
-variable "COMFYUI_REF" {
-    default = "heads/master"
+variable "COMFYUI_VERSION" {
+    default = "refs/heads/master"
 }
 
 group "default" {
@@ -18,7 +18,7 @@ target "comfyui-base" {
     dockerfile = "dockerfile.base"
     args = {
         NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
-        COMFYUI_REF       = "${COMFYUI_REF}"
+        COMFYUI_VERSION   = "${COMFYUI_VERSION}"
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:latest"]
     platforms  = ["linux/amd64"]
