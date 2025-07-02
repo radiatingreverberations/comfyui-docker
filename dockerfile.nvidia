@@ -46,11 +46,11 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
 
 # Install required native dependencies
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/libs/apt/lists,sharing=locked \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     python3.12 python3.12-dev build-essential libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
-    && ln -s /usr/bin/python3.12 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/*
+    && ln -s /usr/bin/python3.12 /usr/bin/python
 
 # Install uv
 ADD https://github.com/astral-sh/uv/releases/download/0.7.16/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
