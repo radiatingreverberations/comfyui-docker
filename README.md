@@ -9,7 +9,7 @@ This repository provides Docker build configurations that package ComfyUI togeth
 
 ## Motivation
 
-The images are ready-to-run with all necessary dependencies already installed. This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
+The images are ready-to-run with all necessary dependencies already installed, including [SageAttention2++](https://github.com/thu-ml/SageAttention). This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
 
 ## Available images
 
