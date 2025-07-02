@@ -26,6 +26,9 @@ jobs:
     with:
       comfyui_ref: "master"
       image_label: "master"
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
 
   build-latest:
@@ -35,3 +38,6 @@ jobs:
       comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
       image_label: "latest"
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
