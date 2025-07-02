@@ -46,11 +46,6 @@ jobs:
         with:
           name: ci
 
-      - name: Create Bake cache directories
-        run: |
-          sudo mkdir -p /mnt/bake-cache-root
-          sudo chown $USER:$USER /mnt/bake-cache-root
-
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
