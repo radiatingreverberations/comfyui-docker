@@ -1,5 +1,4 @@
-ARG NVIDIA_BASE_IMAGE=12.8.1-runtime-ubuntu24.04
-FROM nvidia/cuda:${NVIDIA_BASE_IMAGE}
+FROM base
 
 # Allow cache invalidation of APT
 ARG REFRESH_APT=0

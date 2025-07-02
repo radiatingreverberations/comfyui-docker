@@ -11,7 +11,7 @@ This repository provides Docker build configurations that package ComfyUI togeth
 
 The images are ready-to-run with all necessary dependencies already installed. This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
 
-## Available Images
+## Available images
 
 These images are currently published to the GitHub Container Registry:
 
@@ -21,6 +21,13 @@ These images are currently published to the GitHub Container Registry:
 | `ghcr.io/radiatingreverberations/comfyui-extensions:latest` | [KJNodes](https://github.com/kijai/ComfyUI-KJNodes), [GGUF](https://github.com/city96/ComfyUI-GGUF), [TeaCache](https://github.com/welltop-cn/ComfyUI-TeaCache) |
 | `ghcr.io/radiatingreverberations/comfyui-reactor:latest` | [ReActor](https://github.com/Gourieff/ComfyUI-ReActor) (with model downloader) |
 | `ghcr.io/radiatingreverberations/comfyui-omnigen2:latest` | [OmniGen2](https://github.com/Yuan-ManX/ComfyUI-OmniGen2) (with model downloader)|
+
+## Available tags
+
+| Tag | Description |
+| --- | ------------|
+| `latest` | Latest tagged release of ComfyUI |
+| `master` | Latest commit of the `master` branch of ComfyUI |
 
 ## Running locally
 

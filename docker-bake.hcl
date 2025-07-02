@@ -2,27 +2,35 @@
 variable "DOCKER_REGISTRY_URL" {
     default = ""
 }
-variable "NVIDIA_BASE_IMAGE" {
-    default = "12.8.1-runtime-ubuntu24.04"
-}
 variable "COMFYUI_VERSION" {
     default = "refs/heads/master"
+}
+variable "IMAGE_LABEL" {
+    default = "latest"
 }
 
 group "default" {
     targets = ["comfyui-base", "comfyui-extensions", "comfyui-reactor"]
 }
 
+target "nvidia-base" {
+    context = "."
+    dockerfile = "dockerfile.nvidia"
+    platforms = [ "linux/amd64" ]
+}
+
 target "comfyui-base" {
     context    = "."
     dockerfile = "dockerfile.base"
-    args = {
-        NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
-        COMFYUI_VERSION   = "${COMFYUI_VERSION}"
+    contexts = {
+        base = "target:nvidia-base"
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:latest"]
+    args = {
+        COMFYUI_VERSION = "${COMFYUI_VERSION}"
+    }
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:latest"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
 }
 
@@ -32,9 +40,9 @@ target "comfyui-extensions" {
     contexts = {
         comfyui-base = "target:comfyui-base"
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:latest"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
 }
 
@@ -44,9 +52,9 @@ target "comfyui-omnigen2" {
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-omnigen2:${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-omnigen2:latest"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-omnigen2:${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
 }
 
@@ -56,8 +64,8 @@ target "comfyui-reactor" {
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-reactor:latest"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-reactor:${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-reactor:latest"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-reactor:${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
 }
