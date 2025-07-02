@@ -1,0 +1,16 @@
+name: Trigger builds on new local commits
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-pull-request:
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      comfyui_ref: "master"
+      image_label: "master"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
