@@ -3,13 +3,10 @@ name: Trigger builds on new local commits
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
   get-comfyui-latest-release:
-    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.fetch.outputs.release }}
@@ -33,7 +30,7 @@ jobs:
       packages: write
     secrets: inherit
 
-  build-master:
+  build-comfy-master:
     needs: build-base
     uses: ./.github/workflows/build-docker.yml
     with:
@@ -44,7 +41,7 @@ jobs:
       packages: write
     secrets: inherit
 
-  build-latest:
+  build-comfy-latest-release:
     needs: [get-comfyui-latest-release, build-base]
     uses: ./.github/workflows/build-docker.yml
     with:
