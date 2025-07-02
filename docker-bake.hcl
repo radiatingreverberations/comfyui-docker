@@ -10,7 +10,12 @@ variable "IMAGE_LABEL" {
 }
 
 group "default" {
-    targets = ["comfyui-base", "comfyui-extensions", "comfyui-reactor"]
+    targets = [
+        "nvidia-base",
+        "comfyui-base",
+        "comfyui-extensions",
+        "comfyui-reactor"
+    ]
 }
 
 target "nvidia-base" {

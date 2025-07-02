@@ -22,7 +22,19 @@ jobs:
           repo: ComfyUI
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  build-base:
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      comfyui_ref: "master"
+      image_label: "base"
+      bake_target: "nvidia-base"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+
   build-master:
+    needs: build-base
     uses: ./.github/workflows/build-docker.yml
     with:
       comfyui_ref: "master"
@@ -33,7 +45,7 @@ jobs:
     secrets: inherit
 
   build-latest:
-    needs: get-comfyui-latest-release
+    needs: [get-comfyui-latest-release, build-base]
     uses: ./.github/workflows/build-docker.yml
     with:
       comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
