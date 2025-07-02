@@ -9,6 +9,7 @@ on:
 
 jobs:
   get-comfyui-latest-release:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.fetch.outputs.release }}
