@@ -17,6 +17,9 @@ target "nvidia-base" {
     context = "."
     dockerfile = "dockerfile.nvidia"
     platforms = [ "linux/amd64" ]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
+    cache-to   = ["type=inline"]
 }
 
 target "comfyui-base" {
