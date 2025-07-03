@@ -6,8 +6,6 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     uv pip install \
     einops \
     tokenizers \
-    sentencepiece \
-    safetensors \
     pyyaml \
     pillow \
     scipy \
