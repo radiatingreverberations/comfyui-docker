@@ -9,7 +9,7 @@ This repository provides Docker build configurations that package ComfyUI togeth
 
 ## Motivation
 
-The images are ready-to-run with all necessary dependencies already installed, including [SageAttention2++](https://github.com/thu-ml/SageAttention). This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
+The images are ready-to-run with all necessary dependencies already installed. This means that upgrading to a new version of ComfyUI simply means downloading a new image, instead of updating existing files in place. So no fear of breaking an existing installation while updating!
 
 ## Available images
 
@@ -17,10 +17,9 @@ These images are currently published to the GitHub Container Registry:
 
 | Image | Description |
 |-------|-------------|
-| `ghcr.io/radiatingreverberations/comfyui-base:latest` | Base ComfyUI installation |
+| `ghcr.io/radiatingreverberations/comfyui-base:latest` | [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/mit-han-lab/nunchaku) |
 | `ghcr.io/radiatingreverberations/comfyui-extensions:latest` | [KJNodes](https://github.com/kijai/ComfyUI-KJNodes), [GGUF](https://github.com/city96/ComfyUI-GGUF), [TeaCache](https://github.com/welltop-cn/ComfyUI-TeaCache) |
 | `ghcr.io/radiatingreverberations/comfyui-reactor:latest` | [ReActor](https://github.com/Gourieff/ComfyUI-ReActor) (with model downloader) |
-| `ghcr.io/radiatingreverberations/comfyui-omnigen2:latest` | [OmniGen2](https://github.com/Yuan-ManX/ComfyUI-OmniGen2) (with model downloader)|
 
 ## Available tags
 

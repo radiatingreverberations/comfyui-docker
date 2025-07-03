@@ -39,3 +39,12 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     export SAGEATTENTION_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST} && \
     cd SageAttention && \
     MAX_JOBS=1 NVCC_THREADS=4 uv build --wheel
+
+# Build latest nunchaku
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    git clone --recurse-submodules https://github.com/mit-han-lab/nunchaku.git && \
+    export NUNCHAKU_INSTALL_MODE=ALL && \
+    export NUNCHAKU_BUILD_WHEELS=1 && \
+    cd nunchaku && \
+    MAX_JOBS=1 NVCC_THREADS=4 uv build --wheel
