@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 12.0" && \
     export SAGEATTENTION_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST} && \
     cd SageAttention && \
-    MAX_JOBS=2 NVCC_THREADS=4 uv build --wheel
+    MAX_JOBS=2 NVCC_THREADS=3 uv build --wheel
 
 # Build latest nunchaku
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
@@ -47,4 +47,4 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     export NUNCHAKU_INSTALL_MODE=ALL && \
     export NUNCHAKU_BUILD_WHEELS=1 && \
     cd nunchaku && \
-    MAX_JOBS=2 NVCC_THREADS=4 uv build --wheel
+    MAX_JOBS=2 NVCC_THREADS=3 uv build --wheel
