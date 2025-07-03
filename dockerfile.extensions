@@ -24,3 +24,11 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install -r /comfyui/custom_nodes/ComfyUI-TeaCache-main/requirements.txt && \
     rm -rf /tmp/teacache.tar.gz
+
+ADD https://github.com/mit-han-lab/ComfyUI-nunchaku/archive/refs/heads/main.tar.gz /tmp/nunchaku.tar.gz
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    mkdir -p ComfyUI/custom_nodes/ComfyUI-nunchaku && \
+    tar -xzf /tmp/nunchaku.tar.gz -C /comfyui/custom_nodes && \
+    . venv/bin/activate && \
+    uv pip install -r /comfyui/custom_nodes/ComfyUI-nunchaku-main/requirements.txt && \
+    rm -rf /tmp/nunchaku.tar.gz
