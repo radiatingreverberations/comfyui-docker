@@ -24,7 +24,7 @@ jobs:
     with:
       comfyui_ref: "master"
       image_label: "base"
-      bake_target: "nvidia-base"
+      bake_target: "base"
     permissions:
       contents: read
       packages: write
