@@ -9,6 +9,13 @@ variable "IMAGE_LABEL" {
     default = "latest"
 }
 
+group "base" {
+    targets = [
+        "nvidia-builder",
+        "nvidia-base",
+    ]
+}
+
 group "default" {
     targets = [
         "comfyui-base",
@@ -17,9 +24,21 @@ group "default" {
     ]
 }
 
+target "nvidia-builder" {
+    context = "."
+    dockerfile = "dockerfile.nvidia.builder"
+    platforms = [ "linux/amd64" ]
+    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
+    cache-to   = ["type=inline"]
+}
+
 target "nvidia-base" {
     context = "."
-    dockerfile = "dockerfile.nvidia"
+    dockerfile = "dockerfile.nvidia.base"
+    contexts = {
+        builder = "target:nvidia-builder"
+    }
     platforms = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
