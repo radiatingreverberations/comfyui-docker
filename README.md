@@ -55,16 +55,28 @@ Without any additional configuration, any files created from ComfyUI will be los
 | `/comfyui/input` | Input images/videos |
 | `/comfyui/output` | Generated outputs |
 
-For example:
+A full example using using Docker Compose:
 
-```shell
-docker run --rm --gpus=all --name comfyui \
-  -p 8188:8188 \
-  -v ./models:/comfyui/models \
-  -v ./user:/comfyui/user/default \
-  -v ./input:/comfyui/input \
-  -v ./output:/comfyui/output \
-  ghcr.io/radiatingreverberations/comfyui-extensions:latest
+```yaml
+services:
+  comfyui:
+    image: ghcr.io/radiatingreverberations/comfyui-extensions:latest
+    container_name: comfyui
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./models:/comfyui/models
+      - ./user:/comfyui/user/default
+      - ./input:/comfyui/input
+      - ./output:/comfyui/output
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
 ```
 
 ### Additional custom nodes
