@@ -35,7 +35,7 @@ jobs:
       - name: Get comfyui.sha label from latest built image
         id: current
         run: |
-          image="ghcr.io/${{ github.repository_owner }}/comfyui-base:master"
+          image="ghcr.io/${{ github.repository_owner }}/comfyui-base:${{ inputs.image_label }}"
           if skopeo inspect docker://"$image" >/dev/null 2>&1; then
             last=$(skopeo inspect docker://"$image" \
                      | jq -r '.Labels["comfyui.sha"] // empty')
@@ -55,7 +55,7 @@ jobs:
             echo "changed=false" >>"$GITHUB_OUTPUT"
           fi
 
-  build-comfyui:
+  build-docker:
     needs: check-comfyui
     if: needs.check-comfyui.outputs.changed == 'true'
     uses: ./.github/workflows/build-docker.yml
