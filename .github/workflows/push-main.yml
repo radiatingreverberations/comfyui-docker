@@ -1,4 +1,4 @@
-name: Trigger builds on new local commits
+name: Trigger builds on new commits to main
 
 on:
   push:
