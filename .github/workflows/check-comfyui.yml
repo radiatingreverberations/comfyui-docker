@@ -1,20 +1,23 @@
-name: Rebuild on upstream changes
+name: Rebuild on ComfyUI changes
 
 on:
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-concurrency:
-  group: main-commits
-  cancel-in-progress: false
+  workflow_call:
+    inputs:
+      comfyui_ref:
+        description: "ComfyUI branch or tag to check"
+        required: true
+        type: string
+      image_label:
+        description: "Image label to compare against"
+        required: true
+        type: string
 
 jobs:
-  check-upstream:
+  check-comfyui:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.compare.outputs.changed }}
-      upstream_sha: ${{ steps.upstream.outputs.sha }}
+      comfyui_sha: ${{ steps.comfyui.outputs.sha }}
 
     steps:
       - name: Install skopeo + jq + gh
@@ -22,12 +25,11 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -qq install -y skopeo jq gh
 
-      - name: Get HEAD of upstream master
-        id: upstream
+      - name: Get HEAD of comfyui
+        id: comfyui
         run: |
-          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git \
-                      refs/heads/master | cut -f1)
-          echo "Upstream SHA: $sha"
+          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
+          echo "ComfyUI SHA: $sha"
           echo "sha=$sha" >>"$GITHUB_OUTPUT"
 
       - name: Get comfyui.sha label from latest built image
@@ -47,19 +49,20 @@ jobs:
         id: compare
         run: |
           if [ -n "${{ steps.current.outputs.sha }}" ] && \
-             [ "${{ steps.upstream.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ]; then
+             [ "${{ steps.comfyui.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ]; then
             echo "changed=true"  >>"$GITHUB_OUTPUT"
           else
             echo "changed=false" >>"$GITHUB_OUTPUT"
           fi
 
-  trigger-build-workflow:
-    needs: check-upstream
-    if: needs.check-upstream.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dispatch the build workflow
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo gh workflow run trigger-builds-on-new-local-commits.yml -f ref=main
+  build-comfyui:
+    needs: check-comfyui
+    if: needs.check-comfyui.outputs.changed == 'true'
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      comfyui_ref: "${{ needs.check-comfyui.outputs.comfyui_sha }}"
+      image_label: "${{ inputs.image_label }}"
+    permissions:
+      contents: read
+      # packages: write
+    secrets: inherit

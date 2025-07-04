@@ -1,0 +1,21 @@
+name: Rebuild on ComfyUI master changes
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: main-commits
+  cancel-in-progress: false
+
+jobs:
+  check-comfyui-master:
+    uses: ./.github/workflows/check-comfyui.yml
+    with:
+      comfyui_ref: "master"
+      image_label: "master"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
