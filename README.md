@@ -1,6 +1,6 @@
 # ComfyUI Prebuilt Docker Images
 
-This repository provides Docker build configurations that package ComfyUI together with all prerequisites, in a few different flavors. It also contains GitHub Actions definitions that can build and publish them to the GitHub Container Registry.
+This repository provides Docker build configurations that package [ComfyUI](https://github.com/comfyanonymous/ComfyUI) together with all prerequisites, in a few different flavors. It also contains GitHub Actions definitions that can build and publish them to the GitHub Container Registry.
 
 ## Use cases
 
@@ -30,12 +30,18 @@ These images are currently published to the GitHub Container Registry:
 
 ## Running locally
 
-ComfyUI can run inside of a container with good performance - it can access the GPU as long as the `--gpus` argument is given to Docker.
-
 ### Basic usage
 
 ```shell
 docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest
+```
+
+### Additional options
+
+Additional arguments will be forwarded to ComfyUI. For example, to enable SageAttention:
+
+```shell
+docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest --use-sage-attention
 ```
 
 ### With persistent storage
@@ -76,3 +82,26 @@ Instead of using the pre-built images it is also possible to build them locally.
 ```shell
 docker buildx bake
 ```
+
+## Image details
+
+### NVIDIA base image
+
+NVIDIA CUDA runtime image: [12.8.1-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/12.8.1/ubuntu24.04/runtime/Dockerfile), Python 3.12, git and additional components:
+
+* [uv 0.7.16](https://docs.astral.sh/uv/)
+* [PyTorch 2.8.0rc1](https://dev-discuss.pytorch.org/t/pytorch-2-8-rc1-produced-for-pytorch/3087)
+* [SageAttention2++](https://github.com/woct0rdho/SageAttention.git)
+* [Nunchaku](https://github.com/mit-han-lab/nunchaku.git)
+
+### ComfyUI base image
+
+* [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+* [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
+
+### ComfyUI extensions image
+
+* [KJNodes](https://github.com/kijai/ComfyUI-KJNodes)
+* [GGUF](https://github.com/city96/ComfyUI-GGUF)
+* [TeaCache](https://github.com/welltop-cn/ComfyUI-TeaCache)
+* [Nunchaku](https://github.com/mit-han-lab/ComfyUI-nunchaku)
