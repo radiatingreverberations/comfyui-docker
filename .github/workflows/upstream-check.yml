@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: main-commits
+  cancel-in-progress: false
+
 jobs:
   check-upstream:
     runs-on: ubuntu-latest
@@ -23,6 +27,7 @@ jobs:
         run: |
           sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git \
                       refs/heads/master | cut -f1)
+          echo "Upstream SHA: $sha"
           echo "sha=$sha" >>"$GITHUB_OUTPUT"
 
       - name: Get comfyui.sha label from latest built image
@@ -35,36 +40,14 @@ jobs:
           else
             last=""        # tag doesn't exist
           fi
+          echo "Current image SHA: $last"
           echo "sha=$last" >>"$GITHUB_OUTPUT"
-
-      - name: Check if a main-branch image build is already running
-        id: busy
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-
-          # This is the *orchestrator* workflow that actually pushes images
-          wf="push-main.yml"
-          api="repos/$REPO/actions/workflows/$wf/runs"
-
-          # Count runs for branch=main that are still active (queued or in-progress)
-          runs=$(gh api "$api" -F branch=main -F status=in_progress --jq '.total_count' || echo 0)
-          queued=$(gh api "$api" -F branch=main -F status=queued      --jq '.total_count' || echo 0)
-
-          if [ "$runs" -gt 0 ] || [ "$queued" -gt 0 ]; then
-            echo "busy=true"  >>"$GITHUB_OUTPUT"
-          else
-            echo "busy=false" >>"$GITHUB_OUTPUT"
-          fi
 
       - name: Decide whether to rebuild
         id: compare
         run: |
           if [ -n "${{ steps.current.outputs.sha }}" ] && \
-             [ "${{ steps.upstream.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ] && \
-             [ "${{ steps.busy.outputs.busy }}" = "false" ]; then
+             [ "${{ steps.upstream.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ]; then
             echo "changed=true"  >>"$GITHUB_OUTPUT"
           else
             echo "changed=false" >>"$GITHUB_OUTPUT"

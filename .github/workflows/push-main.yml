@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: main-commits
+  cancel-in-progress: true
+
 jobs:
   get-comfyui-latest-release:
     runs-on: ubuntu-latest
