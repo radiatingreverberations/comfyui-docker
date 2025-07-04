@@ -1,0 +1,17 @@
+name: Rebuild on ComfyUI master changes
+
+on:
+  schedule:
+    - cron: "10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check-comfyui-master:
+    uses: ./.github/workflows/check-comfyui.yml
+    with:
+      comfyui_ref: "master"
+      image_label: "master"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit

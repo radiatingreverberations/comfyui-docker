@@ -1,0 +1,71 @@
+name: Rebuild on ComfyUI changes
+
+on:
+  workflow_call:
+    inputs:
+      comfyui_ref:
+        description: "ComfyUI branch or tag to check"
+        required: true
+        type: string
+      image_label:
+        description: "Image label to compare against"
+        required: true
+        type: string
+
+jobs:
+  check-comfyui:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+      comfyui_sha: ${{ steps.comfyui.outputs.sha }}
+
+    steps:
+      - name: Install skopeo + jq + gh
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y skopeo jq gh
+
+      - name: Get HEAD of comfyui
+        id: comfyui
+        run: |
+          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
+          echo "ComfyUI SHA: $sha"
+          echo "sha=$sha" >>"$GITHUB_OUTPUT"
+
+      - name: Get comfyui.sha label from latest built image
+        id: current
+        run: |
+          image="ghcr.io/${{ github.repository_owner }}/comfyui-base:${{ inputs.image_label }}"
+          if skopeo inspect docker://"$image" >/dev/null 2>&1; then
+            last=$(skopeo inspect docker://"$image" \
+                     | jq -r '.Labels["comfyui.sha"] // empty')
+          else
+            last=""        # tag doesn't exist
+          fi
+          echo "Current image SHA: $last"
+          echo "sha=$last" >>"$GITHUB_OUTPUT"
+
+      - name: Decide whether to rebuild
+        id: compare
+        run: |
+          if [ -n "${{ steps.current.outputs.sha }}" ] && \
+             [ "${{ steps.comfyui.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ]; then
+            echo "changed=true"  >>"$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >>"$GITHUB_OUTPUT"
+          fi
+
+  build-docker:
+    needs: check-comfyui
+    if: needs.check-comfyui.outputs.changed == 'true'
+    concurrency:
+      group: build-${{ inputs.image_label }}
+      cancel-in-progress: false
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      comfyui_ref: "${{ needs.check-comfyui.outputs.comfyui_sha }}"
+      image_label: "${{ inputs.image_label }}"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit

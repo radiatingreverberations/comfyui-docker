@@ -1,4 +1,4 @@
-name: Trigger builds on new local commits
+name: Trigger builds on pull requests to main
 
 on:
   pull_request:
