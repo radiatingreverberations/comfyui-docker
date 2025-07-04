@@ -37,19 +37,22 @@ jobs:
           fi
           echo "sha=$last" >>"$GITHUB_OUTPUT"
 
-      - name: Check if a build is already running
+      - name: Check if a main-branch image build is already running
         id: busy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
-          # count in-progress and queued runs of the main build workflow
-          wf="build-docker.yml"
-          runs=$(gh api \
-            repos/${{ github.repository }}/actions/workflows/$wf/runs \
-            -F branch=main -F status=in_progress --jq '.total_count')
-          queued=$(gh api \
-            repos/${{ github.repository }}/actions/workflows/$wf/runs \
-            -F branch=main -F status=queued      --jq '.total_count')
+          set -euo pipefail
+
+          # This is the *orchestrator* workflow that actually pushes images
+          wf="push-main.yml"
+          api="repos/$REPO/actions/workflows/$wf/runs"
+
+          # Count runs for branch=main that are still active (queued or in-progress)
+          runs=$(gh api "$api" -F branch=main -F status=in_progress --jq '.total_count' || echo 0)
+          queued=$(gh api "$api" -F branch=main -F status=queued      --jq '.total_count' || echo 0)
+
           if [ "$runs" -gt 0 ] || [ "$queued" -gt 0 ]; then
             echo "busy=true"  >>"$GITHUB_OUTPUT"
           else
