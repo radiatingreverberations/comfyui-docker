@@ -1,0 +1,35 @@
+name: Rebuild on ComfyUI latest release changes
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: main-commits
+  cancel-in-progress: false
+
+jobs:
+  get-comfyui-latest-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.fetch.outputs.release }}
+    steps:
+      - name: Get latest release
+        id: fetch
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
+        with:
+          owner: comfyanonymous
+          repo: ComfyUI
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  check-comfyui-latest:
+    needs: get-comfyui-latest-release
+    uses: ./.github/workflows/check-comfyui.yml
+    with:
+      comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
+      image_label: "latest"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit

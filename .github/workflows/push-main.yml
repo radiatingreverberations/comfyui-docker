@@ -51,7 +51,7 @@ jobs:
     with:
       comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
       image_label: "latest"
-    secrets: inherit
     permissions:
       contents: read
       packages: write
+    secrets: inherit
