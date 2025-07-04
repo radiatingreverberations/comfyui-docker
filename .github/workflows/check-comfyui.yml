@@ -58,6 +58,9 @@ jobs:
   build-docker:
     needs: check-comfyui
     if: needs.check-comfyui.outputs.changed == 'true'
+    concurrency:
+      group: build-${{ inputs.image_label }}
+      cancel-in-progress: false
     uses: ./.github/workflows/build-docker.yml
     with:
       comfyui_ref: "${{ needs.check-comfyui.outputs.comfyui_sha }}"
