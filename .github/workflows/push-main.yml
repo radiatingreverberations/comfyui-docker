@@ -26,6 +26,7 @@ jobs:
     uses: ./.github/workflows/build-docker.yml
     with:
       comfyui_ref: "master"
+      image_label: "master"
       bake_target: "base"
     permissions:
       contents: read
