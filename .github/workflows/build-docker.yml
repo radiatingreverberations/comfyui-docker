@@ -28,6 +28,12 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        base_flavor: [nvidia, cpu]
+    env:
+      BASE_FLAVOR: ${{ matrix.base_flavor }}
 
     steps:
       - name: Pre-create BuildKit volume on /mnt

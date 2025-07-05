@@ -1,0 +1,31 @@
+FROM ubuntu:24.04
+
+# Install required native runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3.12 python3.12-dev build-essential libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
+    && ln -s /usr/bin/python3.12 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+ADD https://github.com/astral-sh/uv/releases/download/0.7.16/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
+    mv uv /usr/local/bin/uv && \
+    rm -rf /tmp/uv.tar.gz
+
+# Configure uv cache to work with Docker BuildKit cache
+ENV UV_CACHE_DIR=/cache/uv
+ENV UV_LINK_MODE=copy
+
+# Set app dir
+WORKDIR /comfyui
+
+# Prepare the virtual environment
+RUN uv venv venv
+
+# Install pytorch
+ARG TORCH_VERSION=2.8.0
+ARG TORCH_FLAVOR=test/cpu
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
