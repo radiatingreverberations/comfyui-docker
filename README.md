@@ -23,10 +23,12 @@ These images are currently published to the GitHub Container Registry:
 
 ## Available tags
 
-| Tag | Description |
-| --- | ------------|
-| `latest` | Latest tagged release of ComfyUI |
-| `master` | Latest commit of the `master` branch of ComfyUI |
+| Tag | Description | Flavor |
+| --- | ------------| ------ |
+| `latest` | Latest tagged release of ComfyUI | PyTorch 2.8.0rc1 / CUDA 12.8 |
+| `master` | Latest commit of the `master` branch | PyTorch 2.8.0rc1 / CUDA 12.8 |
+| `cpu-latest` | Latest tagged release of ComfyUI | PyTorch 2.8.0rc1 / CPU |
+| `cpu-master` | Latest commit of the `master` branch | PyTorch 2.8.0rc1 / CPU |
 
 ## Running locally
 
@@ -62,6 +64,8 @@ services:
   comfyui:
     image: ghcr.io/radiatingreverberations/comfyui-extensions:latest
     container_name: comfyui
+    command:
+      - --use-sage-attention
     ports:
       - "8188:8188"
     volumes:
