@@ -30,10 +30,23 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 
+# Install build python packages
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install ninja wheel packaging
+
+# Build latest xformers
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    git clone https://github.com/facebookresearch/xformers.git && \
+    export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 12.0" && \
+    cd xformers && \
+    git submodule update --init --recursive && \
+    MAX_JOBS=1 NVCC_THREADS=4 uv build --wheel
+
 # Build latest SageAttention
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install ninja wheel packaging && \
     git clone https://github.com/woct0rdho/SageAttention.git && \
     export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 12.0" && \
     export SAGEATTENTION_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST} && \
