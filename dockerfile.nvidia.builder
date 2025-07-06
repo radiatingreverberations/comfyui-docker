@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     git clone https://github.com/facebookresearch/xformers.git && \
-    export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 12.0" && \
+    export TORCH_CUDA_ARCH_LIST="7.5 8.0+PTX 9.0a" && \
     cd xformers && \
     git submodule update --init --recursive && \
     MAX_JOBS=1 NVCC_THREADS=4 uv build --wheel
