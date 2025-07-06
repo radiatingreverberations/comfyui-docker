@@ -38,8 +38,7 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     transformers \
     accelerate \
     sentencepiece \
-    protobuf \
-    xformers
+    protobuf
 
 # Install our pre-built SageAttention wheel
 COPY --from=builder /comfyui/SageAttention/dist /tmp/wheels
