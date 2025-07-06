@@ -38,8 +38,14 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     transformers \
     accelerate \
     sentencepiece \
-    protobuf \
-    xformers
+    protobuf
+
+# Install our pre-built xformers wheel
+COPY --from=builder /comfyui/xformers/dist /tmp/wheels
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install xformers --no-index --find-links /tmp/wheels && \
+    rm -rf /tmp/wheels
 
 # Install our pre-built SageAttention wheel
 COPY --from=builder /comfyui/SageAttention/dist /tmp/wheels
