@@ -8,7 +8,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
-ADD https://github.com/astral-sh/uv/releases/download/0.7.16/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+ADD https://github.com/astral-sh/uv/releases/download/0.7.19/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
 RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
     mv uv /usr/local/bin/uv && \
     rm -rf /tmp/uv.tar.gz

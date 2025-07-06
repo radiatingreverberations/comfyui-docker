@@ -105,7 +105,7 @@ docker buildx bake
 
 NVIDIA CUDA runtime image: [12.8.1-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/12.8.1/ubuntu24.04/runtime/Dockerfile), Python 3.12, git and additional components:
 
-* [uv 0.7.16](https://docs.astral.sh/uv/)
+* [uv 0.7.19](https://docs.astral.sh/uv/)
 * [PyTorch 2.8.0rc1](https://dev-discuss.pytorch.org/t/pytorch-2-8-rc1-produced-for-pytorch/3087)
 * [SageAttention2++](https://github.com/woct0rdho/SageAttention.git)
 * [Nunchaku](https://github.com/mit-han-lab/nunchaku.git)
