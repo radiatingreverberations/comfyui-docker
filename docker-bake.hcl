@@ -1,4 +1,3 @@
-# variables pulled from .env or CLI
 variable "DOCKER_REGISTRY_URL" {
     default = ""
 }
@@ -15,8 +14,8 @@ variable "IMAGE_LABEL" {
 variable "BASE_FLAVOR" {
     default = "nvidia"
     validation {
-        condition     = BASE_FLAVOR == "nvidia" || BASE_FLAVOR == "cpu"
-        error_message = "The variable 'BASE_FLAVOR' must be 'nvidia' or 'cpu'."
+        condition     = BASE_FLAVOR == "nvidia" || BASE_FLAVOR == "cpu" || BASE_FLAVOR == "amd"
+        error_message = "The variable 'BASE_FLAVOR' must be 'nvidia' or 'cpu' or 'amd'."
     }
 }
 
@@ -30,6 +29,12 @@ group "nvidia-base" {
 group "cpu-base" {
     targets = [
         "cpu-base",
+    ]
+}
+
+group "amd-base" {
+    targets = [
+        "amd-base",
     ]
 }
 
@@ -74,6 +79,15 @@ target "cpu-base" {
     platforms = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
+    cache-to   = ["type=inline"]
+}
+
+target "amd-base" {
+    context = "."
+    dockerfile = "dockerfile.amd.base"
+    platforms = [ "linux/amd64" ]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:amd"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:amd"]
     cache-to   = ["type=inline"]
 }
 

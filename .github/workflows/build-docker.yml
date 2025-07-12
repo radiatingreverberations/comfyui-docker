@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base_flavor: [nvidia, cpu]
+        base_flavor: [nvidia, cpu, amd]
     env:
       BASE_FLAVOR: ${{ matrix.base_flavor }}
 
