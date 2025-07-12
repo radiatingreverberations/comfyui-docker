@@ -25,7 +25,7 @@ RUN uv venv venv
 
 # Install pytorch
 ARG TORCH_VERSION=2.8.0
-ARG TORCH_FLAVOR=test/rocm64
+ARG TORCH_FLAVOR=test/rocm6.4
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
