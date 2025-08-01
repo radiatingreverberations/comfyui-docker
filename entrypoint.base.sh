@@ -5,4 +5,4 @@ set -e
 source venv/bin/activate
 
 # Start ComfyUI with the specified parameters
-exec python main.py --listen --preview-method auto "$@"
+exec python main.py --listen "$@"

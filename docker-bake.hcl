@@ -2,7 +2,7 @@ variable "DOCKER_REGISTRY_URL" {
     default = ""
 }
 variable "COMFYUI_VERSION" {
-    default = "refs/heads/master"
+    default = "master"
 }
 variable "IMAGE_LABEL" {
     default = "latest"
