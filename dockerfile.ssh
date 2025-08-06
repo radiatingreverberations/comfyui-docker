@@ -1,0 +1,21 @@
+FROM comfyui-extensions
+
+# Install OpenSSH server
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openssh-server curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# SSH server listens to port 2222
+EXPOSE 2222
+
+# Add entrypoint script
+COPY entrypoint.ssh.sh entrypoint.ssh.sh
+RUN sed -i 's/\r$//' entrypoint.ssh.sh
+RUN chmod +x entrypoint.ssh.sh
+
+# If this is not set, a random username will be generated
+ENV SSH_USER=""
+
+# Override the entrypoint script to start the SSH server
+ENTRYPOINT ["./entrypoint.ssh.sh"]

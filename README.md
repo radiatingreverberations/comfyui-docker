@@ -19,7 +19,7 @@ These images are currently published to the GitHub Container Registry:
 |-------|-------------|
 | `ghcr.io/radiatingreverberations/comfyui-base:latest` | [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/mit-han-lab/nunchaku) |
 | `ghcr.io/radiatingreverberations/comfyui-extensions:latest` | [ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager) |
-| `ghcr.io/radiatingreverberations/comfyui-reactor:latest` | [ReActor](https://github.com/Gourieff/ComfyUI-ReActor) (with model downloader) |
+| `ghcr.io/radiatingreverberations/comfyui-ssh:latest` | [OpenSSH](https://www.openssh.com/) |
 
 ## Available tags
 
@@ -102,6 +102,53 @@ services:
 
 When running Docker images on Windows, it most likely runs on a Linux VM under WSL2. This means that they cannot access the Windows file systems directly, but have to use [drvfs](https://wsl.dev/technical-documentation/drvfs/). This can make models take longer to load. The workaround is to put such files on a Linux file system directly inside WSL2.
 
+## Running on a cloud provider
+
+If you were to simply open the ComfyUI port on your container, anyone on the internet will be able to connect, and all the traffic between your computer and the cloud provider would be unencrypted. One solution to this is to use the `ssh` image.
+
+### Connecting using SSH
+
+The `ssh` image starts an OpenSSH server on port 2222. So when running on a cloud provider, you would typically want to run a command like this:
+
+```shell
+docker run --gpus=all -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
+```
+
+The `ssh` image will display additional details on how to connect to the instance:
+
+```plaintext
+================================================================================
+ ComfyUI + SSH Tunnel
+================================================================================
+ User:        u-f0f1c7f3c8d148548dc4875c330849
+ SSH Port:    2222
+ Host key ID: SHA256:N4woBIEaCnT0x9rCayt0OwHbOz+wW2PhJpK4AbU1URY
+
+ Public IPv4: 123.456.789.101
+
+ How to connect:
+   ssh -p 2222 u-f0f1c7f3c8d148548dc4875c330849@123.456.789.101 -L 8188:127.0.0.1:8188
+
+ Note! The actual IP address and port you need to connect to may be different
+ depending on your hosting provider. Check their dashboard for the correct
+ values if the above does not work.
+================================================================================
+```
+
+### Security and configuration
+
+By default the image will randomly generate a username and display it at startup. As this username is only known to you, no one else will be able to connect. It is also possible to configure the username with an environment variable:
+
+```shell
+docker run --gpus=all -e SSH_USER=u-f0f1mysecretuser0849 -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
+```
+
+This way you will not need to look at the console output to find it. To remain secure, ensure that the username you configure is not easy to guess. Alternatively, set a password for your user:
+
+```shell
+docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=your-secure-password -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
+```
+
 ## Building
 
 Instead of using the pre-built images it is also possible to build them locally.
@@ -129,10 +176,3 @@ NVIDIA CUDA runtime image: [12.8.1-runtime-ubuntu24.04](https://gitlab.com/nvidi
 ### AMD base image
 
 AMD ROCm runtime image: [6.4.1-dev-ubuntu24.04](https://github.com/ROCm/ROCm-docker/blob/release-6.4.1/dev/Dockerfile-ubuntu-24.04)
-
-### ComfyUI extensions image
-
-* [KJNodes](https://github.com/kijai/ComfyUI-KJNodes)
-* [GGUF](https://github.com/city96/ComfyUI-GGUF)
-* [TeaCache](https://github.com/welltop-cn/ComfyUI-TeaCache)
-* [Nunchaku](https://github.com/mit-han-lab/ComfyUI-nunchaku)
