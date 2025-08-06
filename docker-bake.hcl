@@ -48,7 +48,7 @@ group "default" {
     targets = [
         "comfyui-base",
         "comfyui-extensions",
-        "comfyui-reactor"
+        "comfyui-ssh"
     ]
 }
 
@@ -118,14 +118,14 @@ target "comfyui-extensions" {
     cache-to   = ["type=inline"]
 }
 
-target "comfyui-reactor" {
+target "comfyui-ssh" {
     context    = "."
-    dockerfile = "dockerfile.reactor"
+    dockerfile = "dockerfile.ssh"
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-reactor:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-reactor:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
 }

@@ -40,6 +40,9 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 # ComfyUI defaults to port 8188
 EXPOSE 8188
 
+# Enable unbuffered output for Python
+ENV PYTHONUNBUFFERED=1
+
 # Add entrypoint script
 COPY entrypoint.base.sh entrypoint.base.sh
 RUN sed -i 's/\r$//' entrypoint.base.sh
