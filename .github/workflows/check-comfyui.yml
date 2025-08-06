@@ -63,7 +63,7 @@ jobs:
       cancel-in-progress: false
     uses: ./.github/workflows/build-docker.yml
     with:
-      comfyui_ref: "${{ needs.check-comfyui.outputs.comfyui_sha }}"
+      comfyui_ref: "${{ inputs.comfyui_ref }}"
       image_label: "${{ inputs.image_label }}"
     permissions:
       contents: read
