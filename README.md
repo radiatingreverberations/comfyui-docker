@@ -137,16 +137,22 @@ The `ssh` image will display additional details on how to connect to the instanc
 
 ### Security and configuration
 
-By default the image will randomly generate a username and display it at startup. As this username is only known to you, no one else will be able to connect. It is also possible to configure the username with an environment variable:
+By default the image will randomly generate a username and display it at startup. As this username is only known to you, no one else will be able to connect. It is also possible to configure the username by setting the `SSH_USER` environment variable:
 
 ```shell
 docker run --gpus=all -e SSH_USER=u-f0f1mysecretuser0849 -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
 ```
 
-This way you will not need to look at the console output to find it. To remain secure, ensure that the username you configure is not easy to guess. Alternatively, set a password for your user:
+This way you will not need to look at the console output to find it. To remain secure, ensure that the username you configure is not easy to guess. Alternatively, use key authentication by specifying your public key with `SSH_KEY`:
 
 ```shell
-docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=your-secure-password -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
+docker run --gpus=all -e SSH_USER=me -e SSH_KEY="ssh-ed25519 AAA...Qma" -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
+```
+
+Or even a password using `SSH_PASSWORD`:
+
+```shell
+docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=extra-super-secret -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
 ```
 
 ## Building

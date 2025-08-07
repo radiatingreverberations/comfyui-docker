@@ -49,6 +49,13 @@ echo "==========================================================================
 echo " User:        ${BOLD}${SSH_USER}${RESET}"
 echo " SSH Port:    ${BOLD}2222${RESET}"
 echo " Host key ID: ${BOLD}${FPR}${RESET}"
+if [ -n "${SSH_KEY:-}" ]; then
+  echo " Auth method: ${BOLD}SSH Key${RESET}"
+elif [ -n "${SSH_PASSWORD:-}" ]; then
+  echo " Auth method: ${BOLD}Password${RESET}"
+else
+  echo " Auth method: ${BOLD}No password (empty)${RESET}"
+fi
 echo
 [ -n "$PUB4" ] && echo " Public IPv4: ${BOLD}${PUB4}${RESET}"
 [ -n "$PUB6" ] && echo " Public IPv6: ${BOLD}${PUB6}${RESET}"
@@ -62,9 +69,9 @@ echo " values if the above does not work."
 echo "================================================================================"
 echo
 
-# Create SSH user account with appropriate settings
+# Create SSH user with root UID (0) to avoid file permission issues in Docker
 if ! id -u "$SSH_USER" >/dev/null 2>&1; then
-  useradd -m -s /bin/bash "$SSH_USER"
+  useradd -m -s /bin/bash -u 0 -o "$SSH_USER" 2>/dev/null || true
 else
   chsh -s /bin/bash "$SSH_USER" || true
 fi
@@ -75,22 +82,49 @@ if [ -n "${SSH_PASSWORD:-}" ]; then
   echo "${SSH_USER}:${SSH_PASSWORD}" | chpasswd
 fi
 
+# Setup SSH key authentication if SSH_KEY is provided
+if [ -n "${SSH_KEY:-}" ]; then
+  # Create .ssh directory for the user
+  SSH_HOME="/home/${SSH_USER}"
+
+  mkdir -p "${SSH_HOME}/.ssh"
+  chmod 700 "${SSH_HOME}/.ssh"
+
+  # Write the public key to authorized_keys
+  echo "${SSH_KEY}" > "${SSH_HOME}/.ssh/authorized_keys"
+  chmod 600 "${SSH_HOME}/.ssh/authorized_keys"
+
+  # Set proper ownership
+  chown -R "${SSH_USER}:${SSH_USER}" "${SSH_HOME}/.ssh" 2>/dev/null || \
+  chown -R "$(id -u "$SSH_USER"):$(id -g "$SSH_USER")" "${SSH_HOME}/.ssh" 2>/dev/null || true
+fi
+
 # Create message of the day with connection instructions
-cat >/etc/motd <<'EOF'
+if [ -n "${SSH_KEY:-}" ]; then
+  cat >/etc/motd <<'EOF'
+You are now connected through SSH (key authentication).
+Access ComfyUI at: http://localhost:8188
+(If you didn't start a tunnel, reconnect like this:)
+  ssh -p 2222 -i <private_key_file> -L 8188:127.0.0.1:8188 <user>@<host>
+EOF
+else
+  cat >/etc/motd <<'EOF'
 You are now connected through SSH.
 Access ComfyUI at: http://localhost:8188
 (If you didn't start a tunnel, reconnect like this:)
   ssh -p 2222 -L 8188:127.0.0.1:8188 <user>@<host>
 EOF
+fi
 
 # Configure SSH daemon with security settings
 cat >/etc/ssh/sshd_config <<EOF
 Port 2222
 UsePAM no
-PasswordAuthentication yes
+PasswordAuthentication $([ -z "${SSH_KEY:-}" ] && echo yes || echo no)
 KbdInteractiveAuthentication no
-PermitEmptyPasswords $([ -z "${SSH_PASSWORD:-}" ] && echo yes || echo no)
-PubkeyAuthentication no
+PermitEmptyPasswords $([ -z "${SSH_PASSWORD:-}" ] && [ -z "${SSH_KEY:-}" ] && echo yes || echo no)
+PermitRootLogin yes
+PubkeyAuthentication $([ -n "${SSH_KEY:-}" ] && echo yes || echo no)
 
 AllowUsers ${SSH_USER}
 AllowTcpForwarding local
@@ -99,7 +133,7 @@ PermitTTY yes
 AllowAgentForwarding no
 GatewayPorts no
 X11Forwarding no
-AuthorizedKeysFile none
+AuthorizedKeysFile $([ -n "${SSH_KEY:-}" ] && echo ".ssh/authorized_keys" || echo "none")
 StrictModes yes
 
 ClientAliveInterval 30
