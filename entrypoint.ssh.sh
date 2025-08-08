@@ -71,10 +71,13 @@ echo
 
 # Create SSH user with root UID (0) to avoid file permission issues in Docker
 if ! id -u "$SSH_USER" >/dev/null 2>&1; then
-  useradd -m -s /bin/bash -u 0 -o "$SSH_USER" 2>/dev/null || true
+  # Create user mapped to root (UID 0) with home set to /comfyui
+  useradd -M -d /comfyui -s /bin/bash -u 0 -o "$SSH_USER" 2>/dev/null || true
 else
   chsh -s /bin/bash "$SSH_USER" || true
 fi
+# Ensure home is set to /comfyui regardless of whether the user existed
+usermod -d /comfyui "$SSH_USER" 2>/dev/null || true
 passwd -d "$SSH_USER" >/dev/null 2>&1 || true   # Set empty password by default
 
 # Allow setting a password via environment variable for additional security
@@ -84,8 +87,9 @@ fi
 
 # Setup SSH key authentication if SSH_KEY is provided
 if [ -n "${SSH_KEY:-}" ]; then
-  # Create .ssh directory for the user
-  SSH_HOME="/home/${SSH_USER}"
+  # Create .ssh directory for the user inside their actual home
+  SSH_HOME="$(getent passwd "$SSH_USER" | cut -d: -f6)"
+  SSH_HOME="${SSH_HOME:-/comfyui}"
 
   mkdir -p "${SSH_HOME}/.ssh"
   chmod 700 "${SSH_HOME}/.ssh"
@@ -96,7 +100,7 @@ if [ -n "${SSH_KEY:-}" ]; then
 
   # Set proper ownership
   chown -R "${SSH_USER}:${SSH_USER}" "${SSH_HOME}/.ssh" 2>/dev/null || \
-  chown -R "$(id -u "$SSH_USER"):$(id -g "$SSH_USER")" "${SSH_HOME}/.ssh" 2>/dev/null || true
+  chown -R "$(id -u "$SSH_USER")":"$(id -g "$SSH_USER")" "${SSH_HOME}/.ssh" 2>/dev/null || true
 fi
 
 # Create message of the day with connection instructions
@@ -143,6 +147,21 @@ TCPKeepAlive yes
 PrintMotd yes
 Subsystem sftp internal-sftp
 EOF
+
+# Auto-activate the ComfyUI virtual environment for interactive bash sessions
+cat >/etc/profile.d/comfyui-venv.sh <<'EOF'
+# Auto-activate ComfyUI venv for interactive sessions
+if [ -n "${BASH_VERSION:-}" ]; then
+  case $- in
+    *i*)
+      if [ -z "${VIRTUAL_ENV:-}" ] && [ -f /comfyui/venv/bin/activate ]; then
+        . /comfyui/venv/bin/activate
+      fi
+    ;;
+  esac
+fi
+EOF
+chmod 0644 /etc/profile.d/comfyui-venv.sh
 
 # Prepare SSH daemon directory and start in background
 mkdir -p /run/sshd

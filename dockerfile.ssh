@@ -3,11 +3,15 @@ FROM comfyui-extensions
 # Install OpenSSH server
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    openssh-server curl \
+    openssh-server curl rsync \
     && rm -rf /var/lib/apt/lists/*
 
 # SSH server listens to port 2222
 EXPOSE 2222
+
+# Provide downloader script in PATH
+COPY download_workflow_models.py /usr/local/bin/download_workflow_models.py
+RUN sed -i 's/\r$//' /usr/local/bin/download_workflow_models.py && chmod +x /usr/local/bin/download_workflow_models.py
 
 # Add entrypoint script
 COPY entrypoint.ssh.sh entrypoint.ssh.sh

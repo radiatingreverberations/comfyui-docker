@@ -155,6 +155,16 @@ Or even a password using `SSH_PASSWORD`:
 docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=extra-super-secret -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
 ```
 
+### Download workflow models
+
+A simple script for downloading model files on the host is provided in the `ssh` image. After connecting over SSH, save the workflow you want to use from the UI. Then run something like:
+
+```bash
+download_workflow_models.py user/default/workflows/t2i-qwen.json
+```
+
+This works with workflows containing model links, such as those provided as templates in ComfyUI.
+
 ## Building
 
 Instead of using the pre-built images it is also possible to build them locally.
