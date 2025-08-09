@@ -40,16 +40,23 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     sentencepiece \
     protobuf
 
-# Install our pre-built SageAttention wheel
-COPY --from=builder /comfyui/SageAttention/dist /tmp/wheels
+# Install pre-built SageAttention wheel
+COPY --from=sageattention /comfyui/SageAttention/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install sageattention --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
 
-# Install our pre-built nunchaku wheel
-COPY --from=builder /comfyui/nunchaku/dist /tmp/wheels
+# Install pre-built nunchaku wheel
+COPY --from=nunchaku /comfyui/nunchaku/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install nunchaku --no-index --find-links /tmp/wheels && \
+    rm -rf /tmp/wheels
+
+# Install pre-built xformers wheel
+COPY --from=xformers /comfyui/xformers/dist /tmp/wheels
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install xformers --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
