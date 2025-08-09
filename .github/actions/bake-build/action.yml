@@ -1,0 +1,83 @@
+name: 'Docker Bake Build'
+description: 'Reusable composite action to build and optionally push Docker Bake targets with standardized labeling.'
+inputs:
+  comfyui_ref:
+    description: 'ComfyUI branch or tag reference'
+    required: true
+  image_label:
+    description: 'Image label (e.g., latest, master)'
+    required: true
+  targets:
+    description: 'Comma or newline separated list of Bake targets to build'
+    required: true
+  push:
+    description: 'Whether to push (true/false)'
+    required: false
+    default: 'true'
+  registry:
+    description: 'Container registry host (e.g., ghcr.io)'
+    required: true
+    default: 'ghcr.io'
+  docker_registry_url:
+    description: 'Full registry URL prefix including trailing slash'
+    required: true
+  extra_set:
+    description: 'Additional Bake set lines (optional)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Pre-create BuildKit volume on /mnt
+      shell: bash
+      run: |
+        sudo mkdir -p /mnt/buildkit-state
+        if ! docker volume inspect buildx_buildkit_ci0_state > /dev/null 2>&1; then
+          sudo docker volume create \
+            --driver local \
+            --opt type=none \
+            --opt device=/mnt/buildkit-state \
+            --opt o=bind \
+            buildx_buildkit_ci0_state
+        fi
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        name: ci
+
+    - name: Log in to registry
+      if: ${{ inputs.push == 'true' && github.event_name != 'pull_request' }}
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Fetch ComfyUI commit SHA
+      id: comfyui_ref
+      shell: bash
+      run: |
+        sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
+        echo "sha=$sha" >> $GITHUB_OUTPUT
+
+    - name: Normalize targets list
+      id: targets
+      shell: bash
+      run: |
+        echo "input targets: ${{ inputs.targets }}"
+        echo "list<<EOF" >> $GITHUB_OUTPUT
+        # Split on comma or newline
+        echo "${{ inputs.targets }}" | tr ',' '\n' | sed '/^\s*$/d' >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Build (Docker Bake)
+      uses: docker/bake-action@v6
+      with:
+        push: ${{ inputs.push == 'true' && github.event_name != 'pull_request' }}
+        set: |
+          *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
+          *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}
+          ${{ inputs.extra_set }}
+        targets: ${{ steps.targets.outputs.list }}

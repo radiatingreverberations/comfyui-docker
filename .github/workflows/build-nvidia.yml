@@ -1,0 +1,72 @@
+name: Build NVIDIA builder images
+
+on:
+  workflow_call:
+    inputs:
+      comfyui_ref:
+        description: "ComfyUI branch or tag to build from"
+        required: true
+        type: string
+      image_label:
+        description: "Label to apply to the built image (kept for consistency)"
+        required: true
+        type: string
+      bake_target:
+        description: "Optional specific NVIDIA bake target (nvidia-builder, nvidia-sageattention, etc.)"
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
+  IMAGE_LABEL: ${{ inputs.image_label }}
+  COMFYUI_VERSION: ${{ inputs.comfyui_ref }}
+
+jobs:
+  nvidia-builder-base:
+    name: Build base NVIDIA builder image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build base builder image
+        uses: ./.github/actions/bake-build
+        with:
+          comfyui_ref: ${{ inputs.comfyui_ref }}
+          image_label: ${{ inputs.image_label }}
+          targets: nvidia-builder
+          push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          registry: ${{ env.REGISTRY }}
+          docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
+
+  nvidia-builders:
+    name: Build NVIDIA builder variants
+    runs-on: ubuntu-latest
+    needs: [nvidia-builder-base]
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        builder_target: [nvidia-sageattention, nvidia-nunchaku, nvidia-xformers]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.builder_target }}
+        uses: ./.github/actions/bake-build
+        with:
+          comfyui_ref: ${{ inputs.comfyui_ref }}
+          image_label: ${{ inputs.image_label }}
+          targets: ${{ matrix.builder_target }}
+          push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          registry: ${{ env.REGISTRY }}
+          docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
+          extra_set: |
+            nvidia-xformers.args.MAX_JOBS=1
+            nvidia-xformers.args.NVCC_THREADS=4
+            nvidia-sageattention.args.MAX_JOBS=1
+            nvidia-sageattention.args.NVCC_THREADS=4
+            nvidia-nunchaku.args.MAX_JOBS=1
+            nvidia-nunchaku.args.NVCC_THREADS=4
