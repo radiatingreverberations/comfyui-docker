@@ -37,14 +37,12 @@ runs:
       shell: bash
       run: |
         sudo mkdir -p /mnt/buildkit-state
-        if ! docker volume inspect buildx_buildkit_ci0_state > /dev/null 2>&1; then
-          sudo docker volume create \
-            --driver local \
-            --opt type=none \
-            --opt device=/mnt/buildkit-state \
-            --opt o=bind \
-            buildx_buildkit_ci0_state
-        fi
+        sudo docker volume create \
+          --driver local \
+          --opt type=none \
+          --opt device=/mnt/buildkit-state \
+          --opt o=bind \
+          buildx_buildkit_ci0_state
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
