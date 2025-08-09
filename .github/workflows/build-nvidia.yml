@@ -40,6 +40,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
+          registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   nvidia-builders:
     name: Build NVIDIA builder variants
@@ -63,6 +64,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
+          registry_token: ${{ secrets.GITHUB_TOKEN }}
           extra_set: |
             nvidia-xformers.args.MAX_JOBS=1
             nvidia-xformers.args.NVCC_THREADS=4
