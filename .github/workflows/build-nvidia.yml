@@ -67,7 +67,7 @@ jobs:
           registry_token: ${{ secrets.GITHUB_TOKEN }}
           extra_set: |
             nvidia-xformers.args.MAX_JOBS=1
-            nvidia-xformers.args.NVCC_THREADS=4
+            nvidia-xformers.args.NVCC_THREADS=2
             nvidia-sageattention.args.MAX_JOBS=1
             nvidia-sageattention.args.NVCC_THREADS=4
             nvidia-nunchaku.args.MAX_JOBS=1
