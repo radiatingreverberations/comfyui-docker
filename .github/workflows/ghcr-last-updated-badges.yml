@@ -96,6 +96,30 @@ jobs:
             json='[]'
           fi
 
+          # Derive updated_at and emit outputs (works for PR previews too)
+          updated_at="$(echo "$json" \
+            | jq -r --arg TAG "$TAG" '
+                map(select(.metadata.container.tags // [] | index($TAG)))
+                | sort_by(.updated_at)
+                | last
+                | .updated_at // empty
+              ' )"
+
+          if [ -z "$updated_at" ]; then
+            echo "message=not found" >> "$GITHUB_OUTPUT"
+            echo "color=lightgrey"   >> "$GITHUB_OUTPUT"
+            echo "skip=true"         >> "$GITHUB_OUTPUT"
+          else
+            date_str="$(date -u -d "$updated_at" +%Y-%m-%dT%H:%MZ 2>/dev/null || echo "$updated_at")"
+            age_hours=$(( ( $(date -u +%s) - $(date -u -d "$updated_at" +%s) ) / 3600 ))
+            if   [ "$age_hours" -le 24 ];  then color=brightgreen
+            elif [ "$age_hours" -le 168 ]; then color=yellow
+            else color=red; fi
+            echo "message=$date_str" >> "$GITHUB_OUTPUT"
+            echo "color=$color"      >> "$GITHUB_OUTPUT"
+            echo "skip=false"        >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check existing gist file
         if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true'
         id: existing
@@ -125,30 +149,6 @@ jobs:
             echo "skip_update=true" >> $GITHUB_OUTPUT
           else
             echo "skip_update=false" >> $GITHUB_OUTPUT
-          fi
-
-          updated_at="$(echo "$json" \
-            | jq -r --arg TAG "$TAG" '
-                map(select(.metadata.container.tags // [] | index($TAG)))
-                | sort_by(.updated_at)
-                | last
-                | .updated_at // empty
-              ' )"
-
-          if [ -z "$updated_at" ]; then
-            echo "message=not found" >> "$GITHUB_OUTPUT"
-            echo "color=lightgrey"   >> "$GITHUB_OUTPUT"
-            echo "skip=true"         >> "$GITHUB_OUTPUT"
-          else
-            # Format and compute age
-            date_str="$(date -u -d "$updated_at" +%Y-%m-%dT%H:%MZ 2>/dev/null || echo "$updated_at")"
-            age_hours=$(( ( $(date -u +%s) - $(date -u -d "$updated_at" +%s) ) / 3600 ))
-            if   [ "$age_hours" -le 24 ];  then color=brightgreen
-            elif [ "$age_hours" -le 168 ]; then color=yellow
-            else color=red; fi
-            echo "message=$date_str" >> "$GITHUB_OUTPUT"
-            echo "color=$color"      >> "$GITHUB_OUTPUT"
-            echo "skip=false"        >> "$GITHUB_OUTPUT"
           fi
 
       - name: Update gist-backed badge
