@@ -25,6 +25,7 @@ group "nvidia-base" {
         "nvidia-sageattention",
         "nvidia-nunchaku",
         "nvidia-xformers",
+        "nvidia-flashattention",
         "nvidia-base",
     ]
 }
@@ -58,7 +59,7 @@ group "default" {
 target "nvidia-builder" {
     context = "."
     dockerfile = "dockerfile.nvidia.builder"
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
     cache-to   = ["type=inline"]
@@ -70,7 +71,7 @@ target "nvidia-sageattention" {
     contexts = {
         builder = "target:nvidia-builder"
     }
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:sageattention"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:sageattention"]
     cache-to   = ["type=inline"]
@@ -82,7 +83,7 @@ target "nvidia-nunchaku" {
     contexts = {
         builder = "target:nvidia-builder"
     }
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:nunchaku"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:nunchaku"]
     cache-to   = ["type=inline"]
@@ -94,9 +95,21 @@ target "nvidia-xformers" {
     contexts = {
         builder = "target:nvidia-builder"
     }
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:xformers"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:xformers"]
+    cache-to   = ["type=inline"]
+}
+
+target "nvidia-flashattention" {
+    context = "."
+    dockerfile = "dockerfile.nvidia.flashattention"
+    contexts = {
+        builder = "target:nvidia-builder"
+    }
+    platforms  = [ "linux/amd64" ]
+    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:flashattention"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:flashattention"]
     cache-to   = ["type=inline"]
 }
 
@@ -104,11 +117,12 @@ target "nvidia-base" {
     context = "."
     dockerfile = "dockerfile.nvidia.base"
     contexts = {
-        sageattention = "target:nvidia-sageattention"
-        nunchaku      = "target:nvidia-nunchaku"
-        xformers      = "target:nvidia-xformers"
+        sageattention  = "target:nvidia-sageattention"
+        nunchaku       = "target:nvidia-nunchaku"
+        xformers       = "target:nvidia-xformers"
+        flashattention = "target:nvidia-flashattention"
     }
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
     cache-to   = ["type=inline"]
@@ -117,7 +131,7 @@ target "nvidia-base" {
 target "cpu-base" {
     context = "."
     dockerfile = "dockerfile.cpu.base"
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
     cache-to   = ["type=inline"]
@@ -126,7 +140,7 @@ target "cpu-base" {
 target "amd-base" {
     context = "."
     dockerfile = "dockerfile.amd.base"
-    platforms = [ "linux/amd64" ]
+    platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:amd"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:amd"]
     cache-to   = ["type=inline"]

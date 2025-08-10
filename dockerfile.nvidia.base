@@ -8,7 +8,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
-ADD https://github.com/astral-sh/uv/releases/download/0.7.16/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+ADD https://github.com/astral-sh/uv/releases/download/0.8.6/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
 RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
     mv uv /usr/local/bin/uv && \
     rm -rf /tmp/uv.tar.gz
@@ -60,4 +60,11 @@ COPY --from=xformers /comfyui/xformers/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install xformers --no-index --find-links /tmp/wheels && \
+    rm -rf /tmp/wheels
+
+# Install pre-built flash attention wheel
+COPY --from=flashattention /comfyui/flash-attention/dist /tmp/wheels
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install flashattention --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
