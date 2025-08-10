@@ -72,13 +72,19 @@ jobs:
 
           fetch_versions() {
             local url="$1"
-            gh api -H "Accept: application/vnd.github+json" "$url?per_page=100" || true
+            if out=$(gh api -H "Accept: application/vnd.github+json" "$url?per_page=100" 2>/dev/null); then
+              echo "$out"
+            else
+              echo "[]"
+            fi
           }
 
-            # Try org path first (works for user-owned org = username too), fall back to user path.
-          json="$(fetch_versions "/orgs/${OWNER}/packages/container/${PACKAGE}/versions")"
-          if [ -z "${json}" ] || [ "${json}" = "[]" ]; then
-            json="$(fetch_versions "/users/${OWNER}/packages/container/${PACKAGE}/versions")"
+          # Single user endpoint (repo is user-owned)
+          json="$(fetch_versions "/users/${OWNER}/packages/container/${PACKAGE}/versions")"
+
+          # Ensure we have an array; if not, reset to empty array to avoid jq errors.
+          if ! echo "$json" | jq -e 'type=="array"' >/dev/null 2>&1; then
+            json='[]'
           fi
 
           updated_at="$(echo "$json" \
@@ -92,6 +98,7 @@ jobs:
           if [ -z "$updated_at" ]; then
             echo "message=not found" >> "$GITHUB_OUTPUT"
             echo "color=lightgrey"   >> "$GITHUB_OUTPUT"
+            echo "skip=true"         >> "$GITHUB_OUTPUT"
           else
             # Format and compute age
             date_str="$(date -u -d "$updated_at" +%Y-%m-%dT%H:%MZ 2>/dev/null || echo "$updated_at")"
@@ -101,9 +108,11 @@ jobs:
             else color=red; fi
             echo "message=$date_str" >> "$GITHUB_OUTPUT"
             echo "color=$color"      >> "$GITHUB_OUTPUT"
+            echo "skip=false"        >> "$GITHUB_OUTPUT"
           fi
 
       - name: Update gist-backed badge
+        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true'
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
@@ -113,3 +122,8 @@ jobs:
           message: ${{ steps.fetch.outputs.message }}
           color: ${{ steps.fetch.outputs.color }}
           cacheSeconds: 300
+
+      - name: PR badge preview (no write)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Preview badge data for ${PACKAGE}:${TAG} -> message='${{ steps.fetch.outputs.message }}' color='${{ steps.fetch.outputs.color }}'"
