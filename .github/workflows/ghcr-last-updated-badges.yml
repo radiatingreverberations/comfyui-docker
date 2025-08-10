@@ -2,18 +2,17 @@ name: GHCR last-updated badges
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '.github/workflows/ghcr-last-updated-badges.yml'
-      - 'README.md'
-  schedule:
-    - cron: "0 * * * *"  # hourly
-
-# Optionally also refresh right after images are built. Uncomment if desired.
-#  workflow_run:
-#    workflows: ["Trigger builds on new commits to main", "Rebuild on ComfyUI master changes", "Rebuild on ComfyUI latest release changes"]
-#    types: [completed]
+  workflow_run:
+    workflows:
+      - "Trigger builds on new commits to main"
+      - "Rebuild on ComfyUI master changes"
+      - "Rebuild on ComfyUI latest release changes"
+    types: [completed]
+  # pull_request:                # Uncomment to enable PR preview runs
+  #   branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/ghcr-last-updated-badges.yml'
+  #     - 'README.md'
 
 permissions:
   contents: read
