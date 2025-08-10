@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         package: [comfyui-base, comfyui-extensions, comfyui-ssh]
         flavor: [nvidia, cpu, amd]
@@ -61,6 +62,14 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -qq install -y jq gh
 
+      - name: Ensure gist token present
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ -z "${{ secrets.GIST_TOKEN }}" ]; then
+            echo "::error::GIST_TOKEN secret not set; cannot update badges." >&2
+            exit 1
+          fi
+
       - name: Fetch updated_at for tag
         id: fetch
         env:
@@ -85,6 +94,37 @@ jobs:
           # Ensure we have an array; if not, reset to empty array to avoid jq errors.
           if ! echo "$json" | jq -e 'type=="array"' >/dev/null 2>&1; then
             json='[]'
+          fi
+
+      - name: Check existing gist file
+        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true'
+        id: existing
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+        run: |
+          set -euo pipefail
+          file="${BADGE_PREFIX}-${{ matrix.package }}-${{ steps.derive.outputs.tag }}.json"
+          # Fetch gist JSON
+          if ! gist_json=$(gh api -H "Accept: application/vnd.github+json" "/gists/${GIST_ID}" 2>/dev/null); then
+            echo "skip_update=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Extract existing content for file (if present)
+          content=$(echo "$gist_json" | jq -r --arg F "$file" '.files[$F].content // empty') || content=""
+          if [ -z "$content" ]; then
+            echo "skip_update=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Compare message & color
+          new_msg='${{ steps.fetch.outputs.message }}'
+          new_color='${{ steps.fetch.outputs.color }}'
+          old_msg=$(echo "$content" | jq -r '.message // empty' 2>/dev/null || true)
+            old_color=$(echo "$content" | jq -r '.color // empty' 2>/dev/null || true)
+          if [ "$new_msg" = "$old_msg" ] && [ "$new_color" = "$old_color" ]; then
+            echo "Gist file already up to date: $file" >&2
+            echo "skip_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_update=false" >> $GITHUB_OUTPUT
           fi
 
           updated_at="$(echo "$json" \
@@ -112,7 +152,7 @@ jobs:
           fi
 
       - name: Update gist-backed badge
-        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true'
+        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true' && steps.existing.outputs.skip_update != 'true'
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
@@ -122,6 +162,11 @@ jobs:
           message: ${{ steps.fetch.outputs.message }}
           color: ${{ steps.fetch.outputs.color }}
           cacheSeconds: 300
+
+      - name: Skipped reason summary
+        if: github.event_name != 'pull_request' && (steps.fetch.outputs.skip == 'true' || steps.existing.outputs.skip_update == 'true')
+        run: |
+          echo "Badge update skipped for ${PACKAGE}:${TAG} (tag_missing=${{ steps.fetch.outputs.skip }} unchanged=${{ steps.existing.outputs.skip_update }} )"
 
       - name: PR badge preview (no write)
         if: github.event_name == 'pull_request'
