@@ -6,8 +6,7 @@ ARG NVCC_THREADS=4
 # Build latest xformers
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    git clone https://github.com/facebookresearch/xformers.git && \
+    git clone --recurse-submodules https://github.com/facebookresearch/xformers.git && \
     export TORCH_CUDA_ARCH_LIST="8.0+PTX 12.0+PTX" && \
     cd xformers && \
-    git submodule update --init --recursive && \
     uv build --wheel
