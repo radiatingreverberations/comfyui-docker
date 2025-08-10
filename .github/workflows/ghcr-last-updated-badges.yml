@@ -158,7 +158,7 @@ jobs:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: ${{ env.GIST_ID }}
           filename: ${{ env.BADGE_PREFIX }}-${{ matrix.package }}-${{ steps.derive.outputs.tag }}.json
-          label: ghcr:${{ matrix.package }}@${{ steps.derive.outputs.tag }}
+          label: ""
           message: ${{ steps.fetch.outputs.message }}
           color: ${{ steps.fetch.outputs.color }}
           cacheSeconds: 300
