@@ -1,0 +1,173 @@
+name: GHCR last-updated badges
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Trigger builds on new commits to main"
+      - "Rebuild on ComfyUI master changes"
+      - "Rebuild on ComfyUI latest release changes"
+    types: [completed]
+  # pull_request:                # Uncomment to enable PR preview runs
+  #   branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/ghcr-last-updated-badges.yml'
+  #     - 'README.md'
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+env:
+  OWNER: ${{ github.repository_owner }}
+  # Will use repository variable GHCR_BADGES_GIST_ID if set, else falls back to hardcoded gist ID.
+  GIST_ID: ${{ vars.GHCR_BADGES_GIST_ID != '' && vars.GHCR_BADGES_GIST_ID || 'eea88cce8184a10cf25b2b09266d236a' }}
+  # File name prefix to avoid collisions if sharing a gist for multiple repos.
+  BADGE_PREFIX: ghcr-last-updated
+
+jobs:
+  badges:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        package: [comfyui-base, comfyui-extensions, comfyui-ssh]
+        flavor: [nvidia, cpu, amd]
+        label: [latest, master]
+
+    steps:
+      - name: Show gist target
+        run: |
+          echo "Using gist ID: ${GIST_ID}"
+
+      - name: Derive tag
+        id: derive
+        run: |
+          if [ "${{ matrix.flavor }}" = "nvidia" ]; then
+            tag='${{ matrix.label }}'
+          else
+            tag='${{ matrix.flavor }}-${{ matrix.label }}'
+          fi
+          echo "TAG=$tag" >> $GITHUB_ENV
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo "PACKAGE=${{ matrix.package }}" >> $GITHUB_ENV
+          echo "FLAVOR=${{ matrix.flavor }}" >> $GITHUB_ENV
+          echo "LABEL=${{ matrix.label }}" >> $GITHUB_ENV
+
+      - name: Install jq and gh
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y jq gh
+
+      - name: Ensure gist token present
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ -z "${{ secrets.GIST_TOKEN }}" ]; then
+            echo "::error::GIST_TOKEN secret not set; cannot update badges." >&2
+            exit 1
+          fi
+
+      - name: Fetch updated_at for tag
+        id: fetch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PACKAGE="$PACKAGE"
+          TAG="$TAG"
+
+          fetch_versions() {
+            local url="$1"
+            if out=$(gh api -H "Accept: application/vnd.github+json" "$url?per_page=100" 2>/dev/null); then
+              echo "$out"
+            else
+              echo "[]"
+            fi
+          }
+
+          # Single user endpoint (repo is user-owned)
+          json="$(fetch_versions "/users/${OWNER}/packages/container/${PACKAGE}/versions")"
+
+          # Ensure we have an array; if not, reset to empty array to avoid jq errors.
+          if ! echo "$json" | jq -e 'type=="array"' >/dev/null 2>&1; then
+            json='[]'
+          fi
+
+          # Derive updated_at and emit outputs (works for PR previews too)
+          updated_at="$(echo "$json" \
+            | jq -r --arg TAG "$TAG" '
+                map(select(.metadata.container.tags // [] | index($TAG)))
+                | sort_by(.updated_at)
+                | last
+                | .updated_at // empty
+              ' )"
+
+          if [ -z "$updated_at" ]; then
+            echo "message=not found" >> "$GITHUB_OUTPUT"
+            echo "color=lightgrey"   >> "$GITHUB_OUTPUT"
+            echo "skip=true"         >> "$GITHUB_OUTPUT"
+          else
+            date_str="$(date -u -d "$updated_at" +%Y-%m-%dT%H:%MZ 2>/dev/null || echo "$updated_at")"
+            age_hours=$(( ( $(date -u +%s) - $(date -u -d "$updated_at" +%s) ) / 3600 ))
+            if   [ "$age_hours" -le 24 ];  then color=brightgreen
+            elif [ "$age_hours" -le 168 ]; then color=yellow
+            else color=red; fi
+            echo "message=$date_str" >> "$GITHUB_OUTPUT"
+            echo "color=$color"      >> "$GITHUB_OUTPUT"
+            echo "skip=false"        >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check existing gist file
+        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true'
+        id: existing
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+        run: |
+          set -euo pipefail
+          file="${BADGE_PREFIX}-${{ matrix.package }}-${{ steps.derive.outputs.tag }}.json"
+          # Fetch gist JSON
+          if ! gist_json=$(gh api -H "Accept: application/vnd.github+json" "/gists/${GIST_ID}" 2>/dev/null); then
+            echo "skip_update=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Extract existing content for file (if present)
+          content=$(echo "$gist_json" | jq -r --arg F "$file" '.files[$F].content // empty') || content=""
+          if [ -z "$content" ]; then
+            echo "skip_update=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Compare message & color
+          new_msg='${{ steps.fetch.outputs.message }}'
+          new_color='${{ steps.fetch.outputs.color }}'
+          old_msg=$(echo "$content" | jq -r '.message // empty' 2>/dev/null || true)
+            old_color=$(echo "$content" | jq -r '.color // empty' 2>/dev/null || true)
+          if [ "$new_msg" = "$old_msg" ] && [ "$new_color" = "$old_color" ]; then
+            echo "Gist file already up to date: $file" >&2
+            echo "skip_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update gist-backed badge
+        if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true' && steps.existing.outputs.skip_update != 'true'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ env.GIST_ID }}
+          filename: ${{ env.BADGE_PREFIX }}-${{ matrix.package }}-${{ steps.derive.outputs.tag }}.json
+          label: ""
+          message: ${{ steps.fetch.outputs.message }}
+          color: ${{ steps.fetch.outputs.color }}
+          cacheSeconds: 300
+
+      - name: Skipped reason summary
+        if: github.event_name != 'pull_request' && (steps.fetch.outputs.skip == 'true' || steps.existing.outputs.skip_update == 'true')
+        run: |
+          echo "Badge update skipped for ${PACKAGE}:${TAG} (tag_missing=${{ steps.fetch.outputs.skip }} unchanged=${{ steps.existing.outputs.skip_update }} )"
+
+      - name: PR badge preview (no write)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Preview badge data for ${PACKAGE}:${TAG} -> message='${{ steps.fetch.outputs.message }}' color='${{ steps.fetch.outputs.color }}'"
