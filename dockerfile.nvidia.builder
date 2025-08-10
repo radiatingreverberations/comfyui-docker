@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.1-devel-ubuntu24.04
+FROM nvidia/cuda:12.9.1-devel-ubuntu24.04
 
 # Install required native build dependencies
 RUN apt-get update && \
@@ -25,10 +25,10 @@ RUN uv venv venv
 
 # Install pytorch
 ARG TORCH_VERSION=2.8.0
-ARG TORCH_FLAVOR=cu128
+ARG TORCH_FLAVOR=cu129
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install torch==${TORCH_VERSION} torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
+    uv pip install torch==${TORCH_VERSION} torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 
 # Install build python packages
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
