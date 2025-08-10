@@ -1,0 +1,110 @@
+name: GHCR last-updated badges
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"  # hourly
+
+# Optionally also refresh right after images are built. Uncomment if desired.
+#  workflow_run:
+#    workflows: ["Trigger builds on new commits to main", "Rebuild on ComfyUI master changes", "Rebuild on ComfyUI latest release changes"]
+#    types: [completed]
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+env:
+  OWNER: ${{ github.repository_owner }}
+  # Will use repository variable GHCR_BADGES_GIST_ID if set, else falls back to hardcoded gist ID.
+  GIST_ID: ${{ vars.GHCR_BADGES_GIST_ID != '' && vars.GHCR_BADGES_GIST_ID || 'eea88cce8184a10cf25b2b09266d236a' }}
+  # File name prefix to avoid collisions if sharing a gist for multiple repos.
+  BADGE_PREFIX: ghcr-last-updated
+
+jobs:
+  badges:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [comfyui-base, comfyui-extensions, comfyui-ssh]
+        flavor: [nvidia, cpu, amd]
+        label: [latest, master]
+
+    steps:
+      - name: Show gist target
+        run: |
+          echo "Using gist ID: ${GIST_ID}"
+
+      - name: Derive tag
+        id: derive
+        run: |
+          if [ "${{ matrix.flavor }}" = "nvidia" ]; then
+            tag='${{ matrix.label }}'
+          else
+            tag='${{ matrix.flavor }}-${{ matrix.label }}'
+          fi
+          echo "TAG=$tag" >> $GITHUB_ENV
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo "PACKAGE=${{ matrix.package }}" >> $GITHUB_ENV
+          echo "FLAVOR=${{ matrix.flavor }}" >> $GITHUB_ENV
+          echo "LABEL=${{ matrix.label }}" >> $GITHUB_ENV
+
+      - name: Install jq and gh
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y jq gh
+
+      - name: Fetch updated_at for tag
+        id: fetch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PACKAGE="$PACKAGE"
+          TAG="$TAG"
+
+          fetch_versions() {
+            local url="$1"
+            gh api -H "Accept: application/vnd.github+json" "$url?per_page=100" || true
+          }
+
+            # Try org path first (works for user-owned org = username too), fall back to user path.
+          json="$(fetch_versions "/orgs/${OWNER}/packages/container/${PACKAGE}/versions")"
+          if [ -z "${json}" ] || [ "${json}" = "[]" ]; then
+            json="$(fetch_versions "/users/${OWNER}/packages/container/${PACKAGE}/versions")"
+          fi
+
+          updated_at="$(echo "$json" \
+            | jq -r --arg TAG "$TAG" '
+                map(select(.metadata.container.tags // [] | index($TAG)))
+                | sort_by(.updated_at)
+                | last
+                | .updated_at // empty
+              ' )"
+
+          if [ -z "$updated_at" ]; then
+            echo "message=not found" >> "$GITHUB_OUTPUT"
+            echo "color=lightgrey"   >> "$GITHUB_OUTPUT"
+          else
+            # Format and compute age
+            date_str="$(date -u -d "$updated_at" +%Y-%m-%dT%H:%MZ 2>/dev/null || echo "$updated_at")"
+            age_hours=$(( ( $(date -u +%s) - $(date -u -d "$updated_at" +%s) ) / 3600 ))
+            if   [ "$age_hours" -le 24 ];  then color=brightgreen
+            elif [ "$age_hours" -le 168 ]; then color=yellow
+            else color=red; fi
+            echo "message=$date_str" >> "$GITHUB_OUTPUT"
+            echo "color=$color"      >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update gist-backed badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ env.GIST_ID }}
+          filename: ${{ env.BADGE_PREFIX }}-${{ matrix.package }}-${{ steps.derive.outputs.tag }}.json
+          label: ghcr:${{ matrix.package }}@${{ steps.derive.outputs.tag }}
+          message: ${{ steps.fetch.outputs.message }}
+          color: ${{ steps.fetch.outputs.color }}
+          cacheSeconds: 300
