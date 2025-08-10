@@ -66,5 +66,5 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 COPY --from=flashattention /comfyui/flash-attention/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install flashattention --no-index --find-links /tmp/wheels && \
+    uv pip install flash-attn --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels

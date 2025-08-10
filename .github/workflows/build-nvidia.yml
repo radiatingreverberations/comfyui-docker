@@ -54,6 +54,11 @@ jobs:
       matrix:
         builder_target: [nvidia-sageattention, nvidia-nunchaku, nvidia-xformers, nvidia-flashattention]
     steps:
+      - name: Set up swap space
+        uses: pierotofy/set-swap-space@v1.0
+        with:
+          swap-size-gb: 10
+
       - uses: actions/checkout@v4
       - name: Build ${{ matrix.builder_target }}
         uses: ./.github/actions/bake-build
@@ -73,4 +78,4 @@ jobs:
             nvidia-nunchaku.args.MAX_JOBS=1
             nvidia-nunchaku.args.NVCC_THREADS=4
             nvidia-flashattention.args.MAX_JOBS=1
-            nvidia-flashattention.args.NVCC_THREADS=4
+            nvidia-flashattention.args.NVCC_THREADS=2
