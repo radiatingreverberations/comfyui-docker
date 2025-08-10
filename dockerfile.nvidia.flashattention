@@ -1,0 +1,11 @@
+FROM builder
+
+ARG MAX_JOBS=2
+ARG NVCC_THREADS=4
+
+# Build latest Flash Attention
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    git clone --recurse-submodules https://github.com/Dao-AILab/flash-attention.git && \
+    cd flash-attention && \
+    uv build --wheel --no-build-isolation
