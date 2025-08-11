@@ -39,7 +39,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     accelerate \
     sentencepiece \
     protobuf \
-    torchsde
+    torchsde \
+    einops
 
 # Install pre-built SageAttention wheel
 COPY --from=sageattention /comfyui/SageAttention/dist /tmp/wheels
