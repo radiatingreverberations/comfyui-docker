@@ -55,3 +55,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
           registry_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_set: |
+            nvidia-xformers.args.MAX_JOBS=1
+            nvidia-xformers.args.NVCC_THREADS=4
+            nvidia-sageattention.args.MAX_JOBS=1
+            nvidia-sageattention.args.NVCC_THREADS=4
+            nvidia-nunchaku.args.MAX_JOBS=1
+            nvidia-nunchaku.args.NVCC_THREADS=4
+            nvidia-flashattention.args.MAX_JOBS=1
+            nvidia-flashattention.args.NVCC_THREADS=2
