@@ -24,7 +24,7 @@ env:
 
 jobs:
   nvidia-builder-base:
-    name: Build base NVIDIA builder image
+    name: Build NVIDIA builder base image
     runs-on: ubuntu-latest
     permissions:
       contents: read

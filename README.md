@@ -15,22 +15,20 @@ The images are ready-to-run with all necessary dependencies already installed. T
 
 These images are currently published to the GitHub Container Registry:
 
-| Image | Description |
+| Image | Additional installed components |
 |-------|-------------|
-| `ghcr.io/radiatingreverberations/comfyui-base:latest` | [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/mit-han-lab/nunchaku) |
-| `ghcr.io/radiatingreverberations/comfyui-extensions:latest` | [ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager) |
-| `ghcr.io/radiatingreverberations/comfyui-ssh:latest` | [OpenSSH](https://www.openssh.com/) |
+| `comfyui-base` | [xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/mit-han-lab/nunchaku) |
+| `comfyui-extensions` | [ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager) |
+| `comfyui-ssh` | [OpenSSH server](https://www.openssh.com/) |
 
 ## Available tags
 
-| Tag | Description | Flavor |
-| --- | ------------| ------ |
-| `latest` | Latest tagged release of ComfyUI | PyTorch 2.8.0rc1 / CUDA 12.8 |
-| `master` | Latest commit of the `master` branch | PyTorch 2.8.0rc1 / CUDA 12.8 |
-| `amd-latest` | Latest tagged release of ComfyUI | PyTorch 2.8.0rc1 / ROCm 6.4 |
-| `amd-master` | Latest commit of the `master` branch | PyTorch 2.8.0rc1 / ROCm 6.4 |
-| `cpu-latest` | Latest tagged release of ComfyUI | PyTorch 2.8.0rc1 / CPU |
-| `cpu-master` | Latest commit of the `master` branch | PyTorch 2.8.0rc1 / CPU |
+| Tag | Description |
+| --- | ------------|
+| `latest` | Latest tagged release of ComfyUI for NVIDIA / CUDA 12.9 |
+| `master` | Latest commit of the ComfyUI `master` branch for NVIDIA / CUDA 12.9 |
+| `amd-latest` / `amd-master` | As above, but for AMD / ROCm 6.4 |
+| `cpu-latest` / `cpu-master` | As above, but a plain Ubuntu base image without GPU support |
 
 ## Automatic builds on upstream changes
 
@@ -41,7 +39,6 @@ The ComfyUI repository is checked periodically for updates, to ensure the images
 | **base** | ![base latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-latest.json) | ![base master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-master.json) | ![base cpu-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-cpu-latest.json) | ![base cpu-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-cpu-master.json) | ![base amd-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-amd-latest.json) | ![base amd-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-base-amd-master.json) |
 | **extensions** | ![ext latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-latest.json) | ![ext master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-master.json) | ![ext cpu-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-cpu-latest.json) | ![ext cpu-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-cpu-master.json) | ![ext amd-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-amd-latest.json) | ![ext amd-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-extensions-amd-master.json) |
 | **ssh** | ![ssh latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-latest.json) | ![ssh master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-master.json) | ![ssh cpu-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-cpu-latest.json) | ![ssh cpu-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-cpu-master.json) | ![ssh amd-latest](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-amd-latest.json) | ![ssh amd-master](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/radiatingreverberations/eea88cce8184a10cf25b2b09266d236a/raw/ghcr-last-updated-comfyui-ssh-amd-master.json) |
-
 
 ## Running locally
 
@@ -190,13 +187,15 @@ docker buildx bake
 
 * [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 * [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
-* [uv 0.7.16](https://docs.astral.sh/uv/)
-* [PyTorch 2.8.0rc1](https://dev-discuss.pytorch.org/t/pytorch-2-8-rc1-produced-for-pytorch/3087)
+* [uv 0.8.6](https://docs.astral.sh/uv/)
+* [PyTorch 2.8.0](https://pytorch.org/projects/pytorch/)
 
 ### NVIDIA base image
 
-NVIDIA CUDA runtime image: [12.8.1-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/12.8.1/ubuntu24.04/runtime/Dockerfile), Python 3.12, git and additional components:
+NVIDIA CUDA runtime image: [12.9.1-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/12.9.1/ubuntu2404/runtime/Dockerfile), Python 3.12, git and additional components:
 
+* [xFormers](https://github.com/facebookresearch/xformers)
+* [FlashAttention-2](https://github.com/Dao-AILab/flash-attention)
 * [SageAttention2++](https://github.com/woct0rdho/SageAttention.git)
 * [Nunchaku](https://github.com/mit-han-lab/nunchaku.git)
 
