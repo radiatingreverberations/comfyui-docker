@@ -63,8 +63,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     rm -rf /tmp/wheels
 
 # Install pre-built flash attention wheel
-COPY --from=flashattention /comfyui/flash-attention/dist /tmp/wheels
-RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
-    uv pip install flash-attn --no-index --find-links /tmp/wheels && \
-    rm -rf /tmp/wheels
+# COPY --from=flashattention /comfyui/flash-attention/dist /tmp/wheels
+# RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+#    . venv/bin/activate && \
+#    uv pip install flash-attn --no-index --find-links /tmp/wheels && \
+#    rm -rf /tmp/wheels
