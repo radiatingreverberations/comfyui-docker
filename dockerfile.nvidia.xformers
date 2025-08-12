@@ -2,11 +2,13 @@ FROM builder
 
 ARG MAX_JOBS=2
 ARG NVCC_THREADS=4
+ARG XFORMERS_VERSION=v0.0.31.post1
 
 # Build latest xformers
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    git clone --recurse-submodules https://github.com/facebookresearch/xformers.git && \
+    git clone --depth 1 --branch ${XFORMERS_VERSION} --recurse-submodules --shallow-submodules https://github.com/facebookresearch/xformers.git xformers && \
     export TORCH_CUDA_ARCH_LIST="8.0+PTX 12.0+PTX" && \
     cd xformers && \
+    git submodule update --init --recursive && \
     uv build --wheel
