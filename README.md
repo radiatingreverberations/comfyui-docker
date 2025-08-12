@@ -17,7 +17,7 @@ These images are currently published to the GitHub Container Registry:
 
 | Image | Additional installed components |
 |-------|-------------|
-| `comfyui-base` | [xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/mit-han-lab/nunchaku) |
+| `comfyui-base` | [xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/nunchaku-tech/nunchaku) |
 | `comfyui-extensions` | [ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager) |
 | `comfyui-ssh` | [OpenSSH server](https://www.openssh.com/) |
 
@@ -197,7 +197,7 @@ NVIDIA CUDA runtime image: [12.9.1-runtime-ubuntu24.04](https://gitlab.com/nvidi
 * [xFormers](https://github.com/facebookresearch/xformers)
 * [FlashAttention-2](https://github.com/Dao-AILab/flash-attention)
 * [SageAttention2++](https://github.com/woct0rdho/SageAttention.git)
-* [Nunchaku](https://github.com/mit-han-lab/nunchaku.git)
+* [Nunchaku](https://github.com/nunchaku-tech/nunchaku)
 
 ### AMD base image
 

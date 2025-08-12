@@ -2,12 +2,14 @@ FROM builder
 
 ARG MAX_JOBS=2
 ARG NVCC_THREADS=4
+ARG NUNCHAKU_VERSION=v0.3.2dev20250809
 
 # Build latest nunchaku
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    git clone --recurse-submodules https://github.com/mit-han-lab/nunchaku.git && \
+    git clone --depth 1 --branch ${NUNCHAKU_VERSION} --recurse-submodules --shallow-submodules https://github.com/nunchaku-tech/nunchaku.git nunchaku && \
     export NUNCHAKU_INSTALL_MODE=ALL && \
     export NUNCHAKU_BUILD_WHEELS=1 && \
     cd nunchaku && \
+    git submodule update --init --recursive && \
     uv build --wheel
