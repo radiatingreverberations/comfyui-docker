@@ -28,11 +28,27 @@ HOST_HINT="${PUB4:-${PUB6:-<host-ip>}}"
 # Store username for easy retrieval
 echo "${SSH_USER}" | tee /run/ssh-user >/dev/null
 
-# SSH host key setup and fingerprint generation
-[ -f /etc/ssh/ssh_host_ed25519_key ] || ssh-keygen -A
+# SSH host key setup (supports injecting a pinned key via env)
+if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+  if [ -n "${SSH_HOST_ED25519_KEY_B64:-}" ]; then
+    umask 077
+    echo "${SSH_HOST_ED25519_KEY_B64}" | base64 -d > /etc/ssh/ssh_host_ed25519_key || {
+      echo "Failed to decode SSH_HOST_ED25519_KEY_B64" >&2; exit 1;
+    }
+    chown root:root /etc/ssh/ssh_host_ed25519_key
+    chmod 600 /etc/ssh/ssh_host_ed25519_key
+    ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub
+  else
+    # No pinned key provided – generate default host keys
+    ssh-keygen -A
+  fi
+else
+  # Ensure matching public key exists if only the private key was baked in
+  [ -f /etc/ssh/ssh_host_ed25519_key.pub ] || ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub || true
+fi
 
-# Get host key fingerprint for display
-FPR="$(ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key | awk '{print $2}')"
+# Get host key fingerprint for display (SHA256)
+FPR="$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key | awk '{print $2}')"
 
 # Setup terminal colors if supported
 if command -v tput >/dev/null 2>&1 && [ -t 1 ]; then

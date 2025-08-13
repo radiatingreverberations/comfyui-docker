@@ -78,6 +78,8 @@ runs:
       uses: docker/bake-action@v6
       with:
         push: ${{ inputs.push == 'true' }}
+        secrets: |
+          id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64
         set: |
           *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
           *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}

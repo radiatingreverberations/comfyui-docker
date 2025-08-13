@@ -43,6 +43,7 @@ jobs:
         base_flavor: [nvidia, cpu, amd]
     env:
       BASE_FLAVOR: ${{ matrix.base_flavor }}
+      SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
     steps:
       - uses: actions/checkout@v4
       - name: Build (flavor=${{ matrix.base_flavor }})
@@ -64,3 +65,4 @@ jobs:
             nvidia-nunchaku.args.NVCC_THREADS=4
             nvidia-flashattention.args.MAX_JOBS=1
             nvidia-flashattention.args.NVCC_THREADS=2
+            comfyui-ssh.secrets=SSH_HOST_ED25519_KEY_B64
