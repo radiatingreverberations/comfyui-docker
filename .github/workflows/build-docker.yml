@@ -65,4 +65,3 @@ jobs:
             nvidia-nunchaku.args.NVCC_THREADS=4
             nvidia-flashattention.args.MAX_JOBS=1
             nvidia-flashattention.args.NVCC_THREADS=2
-            comfyui-ssh.secrets=SSH_HOST_ED25519_KEY_B64
