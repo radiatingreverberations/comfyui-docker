@@ -163,6 +163,8 @@ Or even a password using `SSH_PASSWORD`:
 docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=extra-super-secret -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
 ```
 
+Note: The published SSH image uses a static (pinned) host key. Its SHA256 fingerprint is printed at startup; verify it on first connect and expect it to remain unchanged across restarts and updates.
+
 ### Download workflow models
 
 A simple script for downloading model files on the host is provided in the `ssh` image. After connecting over SSH, save the workflow you want to use from the UI. Then run something like:

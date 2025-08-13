@@ -43,6 +43,7 @@ jobs:
         base_flavor: [nvidia, cpu, amd]
     env:
       BASE_FLAVOR: ${{ matrix.base_flavor }}
+      SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
     steps:
       - uses: actions/checkout@v4
       - name: Build (flavor=${{ matrix.base_flavor }})

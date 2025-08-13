@@ -6,6 +6,19 @@ RUN apt-get update && \
     openssh-server curl rsync \
     && rm -rf /var/lib/apt/lists/*
 
+# Optional: bake a pinned SSH host key into the image via BuildKit secret
+RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false \
+        bash -lc "set -euo pipefail; \
+            umask 077; \
+            if [ -s /run/secrets/SSH_HOST_ED25519_KEY_B64 ]; then \
+                base64 -d /run/secrets/SSH_HOST_ED25519_KEY_B64 > /etc/ssh/ssh_host_ed25519_key; \
+            fi; \
+            if [ -f /etc/ssh/ssh_host_ed25519_key ]; then \
+                chown root:root /etc/ssh/ssh_host_ed25519_key; \
+                chmod 600 /etc/ssh/ssh_host_ed25519_key; \
+                ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub; \
+            fi"
+
 # SSH server listens to port 2222
 EXPOSE 2222
 
