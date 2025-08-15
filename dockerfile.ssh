@@ -1,8 +1,5 @@
 FROM comfyui-extensions
 
-# Cache invalidation marker (bump when rotating baked SSH host key)
-ARG HOST_KEY_VERSION=1
-
 # Install OpenSSH server
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
