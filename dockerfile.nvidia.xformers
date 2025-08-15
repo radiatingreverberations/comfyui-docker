@@ -8,7 +8,7 @@ ARG XFORMERS_VERSION=v0.0.32.post2
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     git clone --depth 1 --branch ${XFORMERS_VERSION} --recurse-submodules --shallow-submodules https://github.com/facebookresearch/xformers.git xformers && \
-    export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 12.0+PTX" && \
+    export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9+PTX 12.0" && \
     cd xformers && \
     git submodule update --init --recursive && \
     uv build --wheel
