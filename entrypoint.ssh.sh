@@ -139,6 +139,9 @@ fi
 # Configure SSH daemon with security settings
 cat >/etc/ssh/sshd_config <<EOF
 Port 2222
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKeyAlgorithms ssh-ed25519
+PubkeyAcceptedKeyTypes ssh-ed25519
 UsePAM no
 PasswordAuthentication $([ -z "${SSH_KEY:-}" ] && echo yes || echo no)
 KbdInteractiveAuthentication no
