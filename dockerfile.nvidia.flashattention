@@ -2,7 +2,7 @@ FROM builder
 
 ARG MAX_JOBS=2
 ARG NVCC_THREADS=4
-ARG FLASH_ATTENTION_VERSION=v2.8.2
+ARG FLASH_ATTENTION_VERSION=v2.8.3
 
 # Build latest Flash Attention
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
