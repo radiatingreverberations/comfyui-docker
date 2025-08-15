@@ -46,6 +46,16 @@ jobs:
       SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
     steps:
       - uses: actions/checkout@v4
+      - name: Derive host key version marker
+        id: hostkey
+        shell: bash
+        run: |
+          if [ -n "${SSH_HOST_ED25519_KEY_B64:-}" ]; then
+            printf '%s' "${SSH_HOST_ED25519_KEY_B64}" | sha256sum | cut -c1-16 > hkver
+            echo "version=$(cat hkver)" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build (flavor=${{ matrix.base_flavor }})
         uses: ./.github/actions/bake-build
         with:
@@ -65,3 +75,4 @@ jobs:
             nvidia-nunchaku.args.NVCC_THREADS=4
             nvidia-flashattention.args.MAX_JOBS=1
             nvidia-flashattention.args.NVCC_THREADS=2
+            comfyui-ssh.args.HOST_KEY_VERSION=${{ steps.hostkey.outputs.version }}

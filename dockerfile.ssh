@@ -1,5 +1,8 @@
 FROM comfyui-extensions
 
+# Cache-busting marker for baking an SSH host key; updated via workflow when secret changes
+ARG HOST_KEY_VERSION=0
+
 # Install OpenSSH server
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -9,6 +12,7 @@ RUN apt-get update && \
 # Optional: bake a pinned SSH host key into the image via BuildKit secret
 RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false \
         bash -lc "set -euo pipefail; \
+            echo \"Host key version: $HOST_KEY_VERSION\" > /dev/null; \
             umask 077; \
             if [ -s /run/secrets/SSH_HOST_ED25519_KEY_B64 ]; then \
                 base64 -d /run/secrets/SSH_HOST_ED25519_KEY_B64 > /etc/ssh/ssh_host_ed25519_key; \
@@ -17,6 +21,10 @@ RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false \
                 chown root:root /etc/ssh/ssh_host_ed25519_key; \
                 chmod 600 /etc/ssh/ssh_host_ed25519_key; \
                 ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub; \
+                FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key | awk '{print $2}'); \
+                echo \"Baked SSH host key fingerprint (SHA256): $FPR\"; \
+            else \
+                echo \"No SSH host key secret provided; host key will be generated at runtime.\"; \
             fi"
 
 # SSH server listens to port 2222
