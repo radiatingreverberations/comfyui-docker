@@ -10,22 +10,32 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Optional: bake a pinned SSH host key into the image via BuildKit secret
-RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false \
-        bash -lc "set -euo pipefail; \
-            echo \"Host key version: $HOST_KEY_VERSION\" > /dev/null; \
-            umask 077; \
-            if [ -s /run/secrets/SSH_HOST_ED25519_KEY_B64 ]; then \
-                base64 -d /run/secrets/SSH_HOST_ED25519_KEY_B64 > /etc/ssh/ssh_host_ed25519_key; \
-            fi; \
-            if [ -f /etc/ssh/ssh_host_ed25519_key ]; then \
-                chown root:root /etc/ssh/ssh_host_ed25519_key; \
-                chmod 600 /etc/ssh/ssh_host_ed25519_key; \
-                ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub; \
-                FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key | awk '{print $2}'); \
-                echo \"Baked SSH host key fingerprint (SHA256): $FPR\"; \
-            else \
-                echo \"No SSH host key secret provided; host key will be generated at runtime.\"; \
-            fi"
+RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false bash -euo pipefail <<'EOF'
+echo "[ssh] Host key version marker: ${HOST_KEY_VERSION}" > /dev/null
+umask 077
+if [ -s /run/secrets/SSH_HOST_ED25519_KEY_B64 ]; then
+    base64 -d /run/secrets/SSH_HOST_ED25519_KEY_B64 > /etc/ssh/ssh_host_ed25519_key || { echo "[ssh] Failed to decode base64 host key" >&2; exit 1; }
+fi
+if [ -f /etc/ssh/ssh_host_ed25519_key ]; then
+    chown root:root /etc/ssh/ssh_host_ed25519_key
+    chmod 600 /etc/ssh/ssh_host_ed25519_key
+    if ! ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub 2>/dev/null; then
+        echo "[ssh] Provided host key is invalid or unreadable" >&2; exit 1
+    fi
+    # Derive SHA256 fingerprint (fallback without -E if unavailable)
+    FPR=""
+    FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}') || true
+    if [ -z "$FPR" ]; then
+        FPR=$(ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}') || true
+    fi
+    HEAD_LINE=$(head -1 /etc/ssh/ssh_host_ed25519_key 2>/dev/null || true)
+    SIZE=$(stat -c%s /etc/ssh/ssh_host_ed25519_key 2>/dev/null || echo 0)
+    echo "[ssh] Baked SSH host key fingerprint: ${FPR:-<none>}"
+    echo "[ssh] Key file first line: $HEAD_LINE (size ${SIZE} bytes)"
+else
+    echo "[ssh] No SSH host key secret provided; host key will be generated at runtime."
+fi
+EOF
 
 # SSH server listens to port 2222
 EXPOSE 2222
