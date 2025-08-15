@@ -46,6 +46,23 @@ jobs:
       SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
     steps:
       - uses: actions/checkout@v4
+      - name: Debug SSH host key secret
+        shell: bash
+        run: |
+          echo "Secret name: SSH_HOST_ED25519_KEY_B64"
+          if [ -n "${SSH_HOST_ED25519_KEY_B64:-}" ]; then
+            echo "Length: ${#SSH_HOST_ED25519_KEY_B64}"
+            printf 'First8(base64): %s\n' "$(printf '%s' "$SSH_HOST_ED25519_KEY_B64" | head -c 8)"
+            # Attempt decode & fingerprint (safe: only prints fingerprint)
+            if printf '%s' "$SSH_HOST_ED25519_KEY_B64" | base64 -d > hk 2>/dev/null; then
+              ssh-keygen -l -E sha256 -f hk 2>/dev/null | awk '{print "Decoded fingerprint: "$2}' || true
+              rm -f hk
+            else
+              echo "Decode failed (not valid base64 or key)" >&2
+            fi
+          else
+            echo "SECRET MISSING" >&2
+          fi
       - name: Build (flavor=${{ matrix.base_flavor }})
         uses: ./.github/actions/bake-build
         with:
