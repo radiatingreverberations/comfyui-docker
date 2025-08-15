@@ -179,7 +179,7 @@ target "comfyui-ssh" {
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
     }
-    secrets    = ["id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64"]
+    secret     = ["id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64"]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]

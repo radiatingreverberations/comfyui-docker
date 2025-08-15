@@ -15,6 +15,13 @@ echo "[ssh] Host key version marker: ${HOST_KEY_VERSION}" > /dev/null
 SECRET_FILE=/run/secrets/SSH_HOST_ED25519_KEY_B64
 umask 077
 
+echo "[ssh][debug] Listing /run/secrets:"; ls -l /run/secrets || true
+if [ -f "$SECRET_FILE" ]; then
+    echo "[ssh][debug] Secret file exists, size $(stat -c%s "$SECRET_FILE" 2>/dev/null || echo ?) bytes"
+else
+    echo "[ssh][debug] Secret file NOT present"
+fi
+
 if [ -s "$SECRET_FILE" ]; then
     # Capture any existing (apt-generated) fingerprint for comparison
     OLD_FPR=""
