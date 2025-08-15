@@ -83,5 +83,3 @@ runs:
           *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}
           ${{ inputs.extra_set }}
         targets: ${{ steps.targets.outputs.list }}
-        secrets: |
-          id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64
