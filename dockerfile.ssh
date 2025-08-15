@@ -1,7 +1,7 @@
 FROM comfyui-extensions
 
-# Cache-busting marker for baking an SSH host key; updated via workflow when secret changes
-ARG HOST_KEY_VERSION=0
+# Cache invalidation marker (bump when rotating baked SSH host key)
+ARG HOST_KEY_VERSION=1
 
 # Install OpenSSH server
 RUN apt-get update && \
@@ -12,28 +12,46 @@ RUN apt-get update && \
 # Optional: bake a pinned SSH host key into the image via BuildKit secret
 RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false bash -euo pipefail <<'EOF'
 echo "[ssh] Host key version marker: ${HOST_KEY_VERSION}" > /dev/null
+SECRET_FILE=/run/secrets/SSH_HOST_ED25519_KEY_B64
 umask 077
-if [ -s /run/secrets/SSH_HOST_ED25519_KEY_B64 ]; then
-    base64 -d /run/secrets/SSH_HOST_ED25519_KEY_B64 > /etc/ssh/ssh_host_ed25519_key || { echo "[ssh] Failed to decode base64 host key" >&2; exit 1; }
-fi
-if [ -f /etc/ssh/ssh_host_ed25519_key ]; then
-    chown root:root /etc/ssh/ssh_host_ed25519_key
+
+if [ -s "$SECRET_FILE" ]; then
+    # Capture any existing (apt-generated) fingerprint for comparison
+    OLD_FPR=""
+    if [ -f /etc/ssh/ssh_host_ed25519_key ]; then
+        OLD_FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}' || true)
+        [ -n "$OLD_FPR" ] || OLD_FPR=$(ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}' || true)
+    fi
+
+    # Decode secret to temp, validate, then atomically replace
+    base64 -d "$SECRET_FILE" > /tmp/host_ed25519_key.dec || { echo "[ssh] Failed to decode base64 host key" >&2; exit 1; }
+    if ! ssh-keygen -y -f /tmp/host_ed25519_key.dec > /tmp/host_ed25519_key.pub 2>/dev/null; then
+        echo "[ssh] Secret does not contain a valid OpenSSH Ed25519 PRIVATE key" >&2; exit 1
+    fi
+    NEW_FPR=$(ssh-keygen -l -E sha256 -f /tmp/host_ed25519_key.dec 2>/dev/null | awk '{print $2}' || true)
+    [ -n "$NEW_FPR" ] || NEW_FPR=$(ssh-keygen -l -f /tmp/host_ed25519_key.dec 2>/dev/null | awk '{print $2}' || true)
+
+    mv /tmp/host_ed25519_key.dec /etc/ssh/ssh_host_ed25519_key
+    mv /tmp/host_ed25519_key.pub /etc/ssh/ssh_host_ed25519_key.pub
+    chown root:root /etc/ssh/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key.pub
     chmod 600 /etc/ssh/ssh_host_ed25519_key
-    if ! ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub 2>/dev/null; then
-        echo "[ssh] Provided host key is invalid or unreadable" >&2; exit 1
+    chmod 644 /etc/ssh/ssh_host_ed25519_key.pub
+
+    if [ -n "$OLD_FPR" ] && [ "$OLD_FPR" != "$NEW_FPR" ]; then
+        echo "[ssh] Overwrote existing host key. Old: $OLD_FPR  New: $NEW_FPR"
+    elif [ -n "$OLD_FPR" ]; then
+        echo "[ssh] Secret host key fingerprint matches existing: $NEW_FPR"
+    else
+        echo "[ssh] Installed new host key fingerprint: $NEW_FPR"
     fi
-    # Derive SHA256 fingerprint (fallback without -E if unavailable)
-    FPR=""
-    FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}') || true
-    if [ -z "$FPR" ]; then
-        FPR=$(ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}') || true
-    fi
-    HEAD_LINE=$(head -1 /etc/ssh/ssh_host_ed25519_key 2>/dev/null || true)
-    SIZE=$(stat -c%s /etc/ssh/ssh_host_ed25519_key 2>/dev/null || echo 0)
-    echo "[ssh] Baked SSH host key fingerprint: ${FPR:-<none>}"
-    echo "[ssh] Key file first line: $HEAD_LINE (size ${SIZE} bytes)"
 else
-    echo "[ssh] No SSH host key secret provided; host key will be generated at runtime."
+    if [ -f /etc/ssh/ssh_host_ed25519_key ]; then
+        CUR_FPR=$(ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}' || true)
+        [ -n "$CUR_FPR" ] || CUR_FPR=$(ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key 2>/dev/null | awk '{print $2}' || true)
+        echo "[ssh] No secret provided; keeping existing (apt-generated) host key: $CUR_FPR"
+    else
+        echo "[ssh] No secret provided and no existing host key; will be generated at runtime."
+    fi
 fi
 EOF
 
