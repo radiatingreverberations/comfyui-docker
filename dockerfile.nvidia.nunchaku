@@ -2,7 +2,7 @@ FROM builder
 
 ARG MAX_JOBS=2
 ARG NVCC_THREADS=4
-ARG NUNCHAKU_VERSION=v0.3.2dev20250809
+ARG NUNCHAKU_VERSION=v0.3.2
 
 # Build latest nunchaku
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
