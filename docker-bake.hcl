@@ -57,7 +57,7 @@ group "default" {
 }
 
 target "nvidia-builder" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.builder"
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
@@ -66,7 +66,7 @@ target "nvidia-builder" {
 }
 
 target "nvidia-sageattention" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.sageattention"
     contexts = {
         builder = "target:nvidia-builder"
@@ -78,7 +78,7 @@ target "nvidia-sageattention" {
 }
 
 target "nvidia-nunchaku" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.nunchaku"
     contexts = {
         builder = "target:nvidia-builder"
@@ -90,7 +90,7 @@ target "nvidia-nunchaku" {
 }
 
 target "nvidia-xformers" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.xformers"
     contexts = {
         builder = "target:nvidia-builder"
@@ -102,7 +102,7 @@ target "nvidia-xformers" {
 }
 
 target "nvidia-flashattention" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.flashattention"
     contexts = {
         builder = "target:nvidia-builder"
@@ -114,7 +114,7 @@ target "nvidia-flashattention" {
 }
 
 target "nvidia-base" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.nvidia.base"
     contexts = {
         sageattention  = "target:nvidia-sageattention"
@@ -129,7 +129,7 @@ target "nvidia-base" {
 }
 
 target "cpu-base" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.cpu.base"
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
@@ -138,7 +138,7 @@ target "cpu-base" {
 }
 
 target "amd-base" {
-    context = "."
+    context = "src"
     dockerfile = "dockerfile.amd.base"
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:amd"]
@@ -147,7 +147,7 @@ target "amd-base" {
 }
 
 target "comfyui-base" {
-    context    = "."
+    context    = "src"
     dockerfile = "dockerfile.base"
     contexts = {
         base = "target:${BASE_FLAVOR}-base"
@@ -162,7 +162,7 @@ target "comfyui-base" {
 }
 
 target "comfyui-extensions" {
-    context    = "."
+    context    = "src"
     dockerfile = "dockerfile.extensions"
     contexts = {
         comfyui-base = "target:comfyui-base"
@@ -174,7 +174,7 @@ target "comfyui-extensions" {
 }
 
 target "comfyui-ssh" {
-    context    = "."
+    context    = "src"
     dockerfile = "dockerfile.ssh"
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
