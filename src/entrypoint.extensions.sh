@@ -7,6 +7,24 @@ ln -s /comfyui-manager /comfyui/custom_nodes/ComfyUI-Manager
 # Activate virtual environment
 source venv/bin/activate
 
+# Ensure ComfyUI-Manager config exists and has use_uv = True
+python - <<'PYCFG'
+import configparser, pathlib
+cfg_path = pathlib.Path('/comfyui/user/default/ComfyUI-Manager/config.ini')
+cfg_path.parent.mkdir(parents=True, exist_ok=True)
+if not cfg_path.exists():
+	# Minimal file with required setting
+	cfg_path.write_text('[default]\nuse_uv = True\n')
+else:
+	cfg = configparser.ConfigParser()
+	cfg.read(cfg_path)
+	if 'default' not in cfg:
+		cfg['default'] = {}
+	cfg['default']['use_uv'] = 'True'
+	with cfg_path.open('w') as f:
+		cfg.write(f)
+PYCFG
+
 # Python dependencies for custom nodes need reinstallation after updates
 python /comfyui-manager/cm-cli.py fix all
 

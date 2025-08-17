@@ -29,3 +29,6 @@ ARG TORCH_FLAVOR=cpu
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install torch==${TORCH_VERSION} torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
+
+# Mark this image as CPU-only so entrypoint can enforce --use-cpu
+ENV COMFY_FORCE_CPU=1
