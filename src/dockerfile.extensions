@@ -19,14 +19,10 @@ ENV COMFYUI_PATH=/comfyui
 # Download ComfyUI-Manager outside of the ComfyUI directory
 RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /comfyui-manager
 
-# Install a base set of overrides to avoid errors at first lauch
-COPY pip_overrides.json /comfyui-manager/pip_overrides.json
-
-# Install ComfyUI-Manager requirements and run update
+# Install ComfyUI-Manager requirements
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install -r /comfyui-manager/requirements.txt && \
-    python /comfyui-manager/cm-cli.py update all
+    uv pip install -r /comfyui-manager/requirements.txt
 
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh
