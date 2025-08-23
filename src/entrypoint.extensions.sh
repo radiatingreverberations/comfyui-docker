@@ -4,6 +4,9 @@ set -e
 # Make the built-in ComfyUI-Manager available in the custom_nodes directory
 ln -s /comfyui-manager /comfyui/custom_nodes/ComfyUI-Manager
 
+# Ensure that the ComfyUI-Manager cache is available on first run
+ln -s /comfyui-manager-cache /comfyui/user/default/ComfyUI-Manager/cache
+
 # Activate virtual environment
 source venv/bin/activate
 
