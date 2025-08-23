@@ -29,5 +29,11 @@ COPY entrypoint.extensions.sh entrypoint.extensions.sh
 RUN sed -i 's/\r$//' entrypoint.extensions.sh
 RUN chmod +x entrypoint.extensions.sh
 
+# Preload the ComfyUI-Manager registry and save it in the image
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    python /comfyui-manager/cm-cli.py update all && \
+    mv /comfyui/user/default/ComfyUI-Manager/cache /comfyui-manager-cache
+
 # Override the entrypoint script to make ComfyUI-Manager visible in the custom_nodes directory
 ENTRYPOINT ["./entrypoint.extensions.sh"]
