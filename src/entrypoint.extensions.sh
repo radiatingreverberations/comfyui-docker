@@ -16,8 +16,8 @@ import configparser, pathlib
 cfg_path = pathlib.Path('/comfyui/user/default/ComfyUI-Manager/config.ini')
 cfg_path.parent.mkdir(parents=True, exist_ok=True)
 if not cfg_path.exists():
-	# Minimal file with required setting
-	cfg_path.write_text('[default]\nuse_uv = True\n')
+	# Minimal file with required settings
+	cfg_path.write_text('[default]\nuse_uv = True\nnetwork_mode = offline\n')
 else:
 	cfg = configparser.ConfigParser()
 	cfg.read(cfg_path)
