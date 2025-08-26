@@ -24,7 +24,6 @@ else:
 	if 'default' not in cfg:
 		cfg['default'] = {}
 	cfg['default']['use_uv'] = 'True'
-	cfg['default']['network_mode'] = 'offline'
 	with cfg_path.open('w') as f:
 		cfg.write(f)
 PYCFG
