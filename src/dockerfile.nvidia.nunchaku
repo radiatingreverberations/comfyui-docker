@@ -1,15 +1,26 @@
 FROM builder
 
-ARG MAX_JOBS=2
-ARG NVCC_THREADS=4
-ARG NUNCHAKU_VERSION=v0.3.2
+ARG NUNCHAKU_VERSION=v1.2.1
 
-# Build latest nunchaku
+# Download the prebuilt Nunchaku wheel matching this builder's Python and torch/CUDA versions
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    git clone --depth 1 --branch ${NUNCHAKU_VERSION} --recurse-submodules --shallow-submodules https://github.com/nunchaku-tech/nunchaku.git nunchaku && \
-    export NUNCHAKU_INSTALL_MODE=ALL && \
-    export NUNCHAKU_BUILD_WHEELS=1 && \
-    cd nunchaku && \
-    git submodule update --init --recursive && \
-    uv build --wheel
+    export PYTHON_TAG=$(python -c "import sys; print(f'cp{sys.version_info.major}{sys.version_info.minor}-cp{sys.version_info.major}{sys.version_info.minor}')") && \
+    export TORCH_VERSION_MM=$(python -c "import torch; print('.'.join(torch.__version__.split('+')[0].split('.')[:2]))") && \
+    export CUDA_VERSION_MM=$(python -c "import torch; print(torch.version.cuda)") && \
+    mkdir -p /comfyui/nunchaku/dist && \
+    python - <<'PY'
+import os
+import pathlib
+import urllib.request
+
+dist = pathlib.Path('/comfyui/nunchaku/dist')
+version = os.environ['NUNCHAKU_VERSION']
+filename = (
+    f"nunchaku-{version.lstrip('v')}+cu{os.environ['CUDA_VERSION_MM']}"
+    f"torch{os.environ['TORCH_VERSION_MM']}-{os.environ['PYTHON_TAG']}-linux_x86_64.whl"
+)
+url = f"https://github.com/nunchaku-ai/nunchaku/releases/download/{version}/{filename}"
+print(url)
+urllib.request.urlretrieve(url, dist / filename)
+PY
