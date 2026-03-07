@@ -14,4 +14,4 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     export NVCC_THREADS=${NVCC_THREADS} && \
     cd SageAttention && \
     git submodule update --init --recursive && \
-    python setup.py bdist_wheel --verbose
+    uv build --wheel --no-build-isolation
