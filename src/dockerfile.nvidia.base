@@ -1,14 +1,29 @@
-FROM nvidia/cuda:12.9.1-runtime-ubuntu24.04
+ARG CUDA_RUNTIME_IMAGE
+FROM ${CUDA_RUNTIME_IMAGE}
+
+ARG PYTHON_VERSION
+ARG UV_VERSION
+ARG TORCH_VERSION
+ARG TORCHVISION_VERSION
+ARG TORCHAUDIO_VERSION
+ARG TORCH_FLAVOR
+
+RUN test -n "${PYTHON_VERSION}" && \
+    test -n "${UV_VERSION}" && \
+    test -n "${TORCH_VERSION}" && \
+    test -n "${TORCHVISION_VERSION}" && \
+    test -n "${TORCHAUDIO_VERSION}" && \
+    test -n "${TORCH_FLAVOR}"
 
 # Install required native runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    python3.12 python3.12-dev build-essential libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
-    && ln -s /usr/bin/python3.12 /usr/bin/python \
+    python${PYTHON_VERSION} python${PYTHON_VERSION}-dev build-essential libgl1 libglib2.0-0 libgthread-2.0-0 libgtk-3-0 \
+    && ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
-ADD https://github.com/astral-sh/uv/releases/download/0.8.6/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+ADD https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
 RUN tar -xzf /tmp/uv.tar.gz --strip-components=1 && \
     mv uv /usr/local/bin/uv && \
     rm -rf /tmp/uv.tar.gz
@@ -24,11 +39,13 @@ WORKDIR /comfyui
 RUN uv venv venv
 
 # Install pytorch
-ARG TORCH_VERSION=2.8.0
-ARG TORCH_FLAVOR=cu129
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install torch==${TORCH_VERSION} torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
+    uv pip install \
+    torch==${TORCH_VERSION} \
+    torchvision==${TORCHVISION_VERSION} \
+    torchaudio==${TORCHAUDIO_VERSION} \
+    --index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 
 # Install common dependencies required by our pre-built wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \

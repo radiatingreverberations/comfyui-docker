@@ -1,8 +1,41 @@
 variable "DOCKER_REGISTRY_URL" {
-    default = ""
+    default = "ghcr.io/radiatingreverberations/"
 }
 variable "COMFYUI_VERSION" {
     default = "master"
+}
+variable "PYTHON_VERSION" {
+    default = "3.12"
+}
+variable "UV_VERSION" {
+    default = "0.10.9"
+}
+variable "TORCH_VERSION" {
+    default = "2.10.0"
+}
+variable "TORCHVISION_VERSION" {
+    default = "0.25.0"
+}
+variable "TORCHAUDIO_VERSION" {
+    default = "2.10.0"
+}
+variable "NVIDIA_CUDA_RUNTIME_IMAGE" {
+    default = "nvidia/cuda:13.0.0-runtime-ubuntu24.04"
+}
+variable "NVIDIA_CUDA_DEVEL_IMAGE" {
+    default = "nvidia/cuda:13.0.0-devel-ubuntu24.04"
+}
+variable "NVIDIA_TORCH_FLAVOR" {
+    default = "cu130"
+}
+variable "AMD_ROCM_IMAGE" {
+    default = "rocm/dev-ubuntu-24.04:7.1"
+}
+variable "AMD_TORCH_FLAVOR" {
+    default = "rocm7.1"
+}
+variable "CPU_TORCH_FLAVOR" {
+    default = "cpu"
 }
 variable "IMAGE_LABEL" {
     default = "latest"
@@ -12,7 +45,7 @@ variable "IMAGE_LABEL" {
   }
 }
 variable "BASE_FLAVOR" {
-    default = "nvidia"
+    default = "cpu"
     validation {
         condition     = BASE_FLAVOR == "nvidia" || BASE_FLAVOR == "cpu" || BASE_FLAVOR == "amd"
         error_message = "The variable 'BASE_FLAVOR' must be 'nvidia' or 'cpu' or 'amd'."
@@ -59,6 +92,15 @@ group "default" {
 target "nvidia-builder" {
     context = "src"
     dockerfile = "dockerfile.nvidia.builder"
+    args = {
+        CUDA_DEVEL_IMAGE    = "${NVIDIA_CUDA_DEVEL_IMAGE}"
+        PYTHON_VERSION      = "${PYTHON_VERSION}"
+        UV_VERSION          = "${UV_VERSION}"
+        TORCH_VERSION       = "${TORCH_VERSION}"
+        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
+        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
+        TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
+    }
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
@@ -122,6 +164,15 @@ target "nvidia-base" {
         xformers       = "target:nvidia-xformers"
         flashattention = "target:nvidia-flashattention"
     }
+    args = {
+        CUDA_RUNTIME_IMAGE  = "${NVIDIA_CUDA_RUNTIME_IMAGE}"
+        PYTHON_VERSION      = "${PYTHON_VERSION}"
+        UV_VERSION          = "${UV_VERSION}"
+        TORCH_VERSION       = "${TORCH_VERSION}"
+        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
+        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
+        TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
+    }
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
@@ -131,6 +182,14 @@ target "nvidia-base" {
 target "cpu-base" {
     context = "src"
     dockerfile = "dockerfile.cpu.base"
+    args = {
+        PYTHON_VERSION      = "${PYTHON_VERSION}"
+        UV_VERSION          = "${UV_VERSION}"
+        TORCH_VERSION       = "${TORCH_VERSION}"
+        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
+        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
+        TORCH_FLAVOR        = "${CPU_TORCH_FLAVOR}"
+    }
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
@@ -140,6 +199,15 @@ target "cpu-base" {
 target "amd-base" {
     context = "src"
     dockerfile = "dockerfile.amd.base"
+    args = {
+        ROCM_IMAGE          = "${AMD_ROCM_IMAGE}"
+        PYTHON_VERSION      = "${PYTHON_VERSION}"
+        UV_VERSION          = "${UV_VERSION}"
+        TORCH_VERSION       = "${TORCH_VERSION}"
+        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
+        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
+        TORCH_FLAVOR        = "${AMD_TORCH_FLAVOR}"
+    }
     platforms  = [ "linux/amd64" ]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:amd"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:amd"]
