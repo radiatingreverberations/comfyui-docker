@@ -5,7 +5,7 @@ set -e
 ln -s /comfyui-manager /comfyui/custom_nodes/ComfyUI-Manager
 
 # Ensure that the ComfyUI-Manager cache is available on first run
-ln -s /comfyui-manager-cache /comfyui/user/default/ComfyUI-Manager/cache
+ln -s /comfyui-manager-cache /comfyui/user/__manager/cache
 
 # Activate virtual environment
 source venv/bin/activate
@@ -13,7 +13,7 @@ source venv/bin/activate
 # Ensure ComfyUI-Manager config exists and has use_uv = True
 python - <<'PYCFG'
 import configparser, pathlib
-cfg_path = pathlib.Path('/comfyui/user/default/ComfyUI-Manager/config.ini')
+cfg_path = pathlib.Path('/comfyui/user/__manager/config.ini')
 cfg_path.parent.mkdir(parents=True, exist_ok=True)
 if not cfg_path.exists():
 	# Minimal file with required settings

@@ -32,8 +32,8 @@ RUN chmod +x entrypoint.extensions.sh
 # Preload the ComfyUI-Manager registry and save it in the image
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    python /comfyui-manager/cm-cli.py update all && \
-    mv /comfyui/user/default/ComfyUI-Manager/cache /comfyui-manager-cache
+    python /comfyui-manager/cm-cli.py show all --mode remote && \
+    mv /comfyui/user/__manager/cache /comfyui-manager-cache
 
 # Override the entrypoint script to make ComfyUI-Manager visible in the custom_nodes directory
 ENTRYPOINT ["./entrypoint.extensions.sh"]
