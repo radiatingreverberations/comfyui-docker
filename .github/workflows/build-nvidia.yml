@@ -15,6 +15,10 @@ on:
         description: "Optional specific NVIDIA bake target (nvidia-builder, nvidia-sageattention, etc.)"
         required: false
         type: string
+      push_images:
+        description: "Whether built images should be pushed to the registry"
+        required: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -37,7 +41,7 @@ jobs:
           comfyui_ref: ${{ inputs.comfyui_ref }}
           image_label: ${{ inputs.image_label }}
           targets: nvidia-builder
-          push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          push: ${{ inputs.push_images && 'true' || 'false' }}
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
           registry_token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +70,7 @@ jobs:
           comfyui_ref: ${{ inputs.comfyui_ref }}
           image_label: ${{ inputs.image_label }}
           targets: ${{ matrix.builder_target }}
-          push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          push: ${{ inputs.push_images && 'true' || 'false' }}
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
           registry_token: ${{ secrets.GITHUB_TOKEN }}

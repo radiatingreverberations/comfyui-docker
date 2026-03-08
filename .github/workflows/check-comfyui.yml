@@ -65,6 +65,7 @@ jobs:
     with:
       comfyui_ref: "${{ inputs.comfyui_ref }}"
       image_label: "${{ inputs.image_label }}"
+      push_images: true
     permissions:
       contents: read
       packages: write

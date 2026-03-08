@@ -35,9 +35,9 @@ These images are currently published to the GitHub Container Registry:
 
 | Tag | Description |
 | --- | ------------|
-| `latest` | Latest tagged release of ComfyUI for NVIDIA / CUDA 12.9 |
-| `master` | Latest commit of the ComfyUI `master` branch for NVIDIA / CUDA 12.9 |
-| `amd-latest` / `amd-master` | As above, but for AMD / ROCm 6.4 |
+| `latest` | Latest tagged release of ComfyUI for NVIDIA / CUDA 13.0 |
+| `master` | Latest commit of the ComfyUI `master` branch for NVIDIA / CUDA 13.0 |
+| `amd-latest` / `amd-master` | As above, but for AMD / ROCm 7.1 |
 | `cpu-latest` / `cpu-master` | As above, but a plain Ubuntu base image without GPU support |
 
 ## Running locally
@@ -189,12 +189,12 @@ docker buildx bake
 
 * [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 * [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
-* [uv 0.8.6](https://docs.astral.sh/uv/)
-* [PyTorch 2.8.0](https://pytorch.org/projects/pytorch/)
+* [uv 0.10.9](https://docs.astral.sh/uv/)
+* [PyTorch 2.10.0](https://pytorch.org/projects/pytorch/)
 
 ### NVIDIA base image
 
-NVIDIA CUDA runtime image: [12.9.1-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/12.9.1/ubuntu2404/runtime/Dockerfile), Python 3.12, git and additional components:
+NVIDIA CUDA runtime image: [nvidia/cuda:13.0.0-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/13.0.2/ubuntu2404/runtime/Dockerfile?ref_type=heads), Python 3.12, git and additional components:
 
 * [xFormers](https://github.com/facebookresearch/xformers)
 * [FlashAttention-2](https://github.com/Dao-AILab/flash-attention)
@@ -203,4 +203,4 @@ NVIDIA CUDA runtime image: [12.9.1-runtime-ubuntu24.04](https://gitlab.com/nvidi
 
 ### AMD base image
 
-AMD ROCm runtime image: [6.4.1-dev-ubuntu24.04](https://github.com/ROCm/ROCm-docker/blob/release-6.4.1/dev/Dockerfile-ubuntu-24.04)
+AMD ROCm runtime image: [rocm/dev-ubuntu-24.04:7.1](https://hub.docker.com/r/rocm/dev-ubuntu-24.04/tags)

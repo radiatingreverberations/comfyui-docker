@@ -15,6 +15,10 @@ on:
         description: "Docker Bake target to build"
         required: false
         type: string
+      push_images:
+        description: "Whether built images should be pushed to the registry"
+        required: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -30,6 +34,7 @@ jobs:
       comfyui_ref: ${{ inputs.comfyui_ref }}
       image_label: ${{ inputs.image_label }}
       bake_target: ${{ inputs.bake_target }}
+      push_images: ${{ inputs.push_images }}
 
   build:
     needs: [build-nvidia-builders]
@@ -52,7 +57,7 @@ jobs:
           comfyui_ref: ${{ inputs.comfyui_ref }}
           image_label: ${{ inputs.image_label }}
           targets: ${{ inputs.bake_target || 'default' }}
-          push: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          push: ${{ inputs.push_images && 'true' || 'false' }}
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
           registry_token: ${{ secrets.GITHUB_TOKEN }}

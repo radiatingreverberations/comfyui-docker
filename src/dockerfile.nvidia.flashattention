@@ -8,6 +8,8 @@ ARG FLASH_ATTENTION_VERSION=v2.8.3
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     git clone --depth 1 --branch ${FLASH_ATTENTION_VERSION} --recurse-submodules --shallow-submodules https://github.com/Dao-AILab/flash-attention.git flash-attention && \
+    export MAX_JOBS=${MAX_JOBS} && \
+    export NVCC_THREADS=${NVCC_THREADS} && \
     cd flash-attention && \
     git submodule update --init --recursive && \
     uv build --wheel --no-build-isolation

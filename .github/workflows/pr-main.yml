@@ -10,6 +10,7 @@ jobs:
     with:
       comfyui_ref: "master"
       image_label: "master"
+      push_images: true
     permissions:
       contents: read
       packages: write

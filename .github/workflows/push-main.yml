@@ -28,6 +28,7 @@ jobs:
       comfyui_ref: "master"
       image_label: "master"
       bake_target: "base"
+      push_images: true
     permissions:
       contents: read
       packages: write
@@ -42,6 +43,7 @@ jobs:
     with:
       comfyui_ref: "master"
       image_label: "master"
+      push_images: true
     permissions:
       contents: read
       packages: write
@@ -56,6 +58,7 @@ jobs:
     with:
       comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
       image_label: "latest"
+      push_images: true
     permissions:
       contents: read
       packages: write
