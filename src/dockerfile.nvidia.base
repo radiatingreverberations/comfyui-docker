@@ -53,7 +53,9 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     uv pip install \
     diffusers \
     transformers \
+    huggingface-hub \
     accelerate \
+    peft \
     sentencepiece \
     protobuf \
     torchsde \
@@ -63,26 +65,26 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 COPY --from=sageattention /comfyui/SageAttention/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install sageattention --no-index --find-links /tmp/wheels && \
+    uv pip install sageattention --no-deps --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
 
 # Install pre-built nunchaku wheel
 COPY --from=nunchaku /comfyui/nunchaku/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install nunchaku --no-index --find-links /tmp/wheels && \
+    uv pip install nunchaku --no-deps --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
 
 # Install pre-built xformers wheel
 COPY --from=xformers /comfyui/xformers/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install xformers --no-index --find-links /tmp/wheels && \
+    uv pip install xformers --no-deps --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
 
 # Install pre-built flash attention wheel
 COPY --from=flashattention /comfyui/flash-attention/dist /tmp/wheels
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install flash-attn --no-index --find-links /tmp/wheels && \
+    uv pip install flash-attn --no-deps --no-index --find-links /tmp/wheels && \
     rm -rf /tmp/wheels
