@@ -1,11 +1,32 @@
 #!/bin/bash
 set -e
 
+ensure_symlink() {
+	local target="$1"
+	local link_path="$2"
+	local link_dir
+
+	link_dir=$(dirname "$link_path")
+	mkdir -p "$link_dir"
+
+	if [ -L "$link_path" ]; then
+		if [ "$(readlink "$link_path")" = "$target" ]; then
+			return
+		fi
+		rm "$link_path"
+	elif [ -e "$link_path" ]; then
+		echo "Refusing to replace non-symlink path: $link_path" >&2
+		exit 1
+	fi
+
+	ln -s "$target" "$link_path"
+}
+
 # Make the built-in ComfyUI-Manager available in the custom_nodes directory
-ln -s /comfyui-manager /comfyui/custom_nodes/ComfyUI-Manager
+ensure_symlink /comfyui-manager /comfyui/custom_nodes/ComfyUI-Manager
 
 # Ensure that the ComfyUI-Manager cache is available on first run
-ln -s /comfyui-manager-cache /comfyui/user/__manager/cache
+ensure_symlink /comfyui-manager-cache /comfyui/user/__manager/cache
 
 # Activate virtual environment
 source venv/bin/activate
