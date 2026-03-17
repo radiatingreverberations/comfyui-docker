@@ -6,34 +6,23 @@ RUN apt-get update && \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Add git metadata for our existing comfyui installation
-# This is required by ComfyUI-Manager to determine the current version
-ARG COMFYUI_VERSION=master
-RUN git clone --depth 1 --bare --branch ${COMFYUI_VERSION} \
-    https://github.com/comfyanonymous/ComfyUI /comfyui.git && \
-    git init --separate-git-dir /comfyui.git
-
 # Required by ComfyUI-Manager
 ENV COMFYUI_PATH=/comfyui
 
-# Download ComfyUI-Manager outside of the ComfyUI directory
-RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /comfyui-manager
-
-# Install ComfyUI-Manager requirements
+# Install optional ComfyUI-Manager dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
-    uv pip install -r /comfyui-manager/requirements.txt
+    uv pip install matrix-nio
+
+# Install required ComfyUI-Manager dependencies
+RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+    . venv/bin/activate && \
+    uv pip install -r /comfyui/manager_requirements.txt
 
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh
 RUN sed -i 's/\r$//' entrypoint.extensions.sh
 RUN chmod +x entrypoint.extensions.sh
-
-# Preload the ComfyUI-Manager registry and save it in the image
-RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
-    python /comfyui-manager/cm-cli.py show all --mode remote && \
-    mv /comfyui/user/__manager/cache /comfyui-manager-cache
 
 # Override the entrypoint script to make ComfyUI-Manager visible in the custom_nodes directory
 ENTRYPOINT ["./entrypoint.extensions.sh"]
