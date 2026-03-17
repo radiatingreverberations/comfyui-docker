@@ -4,15 +4,11 @@ FROM ${CUDA_DEVEL_IMAGE}
 ARG PYTHON_VERSION
 ARG UV_VERSION
 ARG TORCH_VERSION
-ARG TORCHVISION_VERSION
-ARG TORCHAUDIO_VERSION
 ARG TORCH_FLAVOR
 
 RUN test -n "${PYTHON_VERSION}" && \
     test -n "${UV_VERSION}" && \
     test -n "${TORCH_VERSION}" && \
-    test -n "${TORCHVISION_VERSION}" && \
-    test -n "${TORCHAUDIO_VERSION}" && \
     test -n "${TORCH_FLAVOR}"
 
 # Install required native build dependencies
@@ -43,8 +39,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     . venv/bin/activate && \
     uv pip install \
     torch==${TORCH_VERSION} \
-    torchvision==${TORCHVISION_VERSION} \
-    torchaudio==${TORCHAUDIO_VERSION} \
+    torchvision \
+    torchaudio \
     --index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 
 # Install build python packages

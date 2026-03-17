@@ -8,22 +8,16 @@ variable "PYTHON_VERSION" {
     default = "3.12"
 }
 variable "UV_VERSION" {
-    default = "0.10.9"
+    default = "0.10.11"
 }
 variable "TORCH_VERSION" {
     default = "2.10.0"
 }
-variable "TORCHVISION_VERSION" {
-    default = "0.25.0"
-}
-variable "TORCHAUDIO_VERSION" {
-    default = "2.10.0"
-}
 variable "NVIDIA_CUDA_RUNTIME_IMAGE" {
-    default = "nvidia/cuda:13.0.0-runtime-ubuntu24.04"
+    default = "nvidia/cuda:13.0.2-runtime-ubuntu24.04"
 }
 variable "NVIDIA_CUDA_DEVEL_IMAGE" {
-    default = "nvidia/cuda:13.0.0-devel-ubuntu24.04"
+    default = "nvidia/cuda:13.0.2-devel-ubuntu24.04"
 }
 variable "NVIDIA_TORCH_FLAVOR" {
     default = "cu130"
@@ -97,8 +91,6 @@ target "nvidia-builder" {
         PYTHON_VERSION      = "${PYTHON_VERSION}"
         UV_VERSION          = "${UV_VERSION}"
         TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
-        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
         TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
     }
     platforms  = [ "linux/amd64" ]
@@ -169,8 +161,6 @@ target "nvidia-base" {
         PYTHON_VERSION      = "${PYTHON_VERSION}"
         UV_VERSION          = "${UV_VERSION}"
         TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
-        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
         TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
     }
     platforms  = [ "linux/amd64" ]
@@ -186,8 +176,6 @@ target "cpu-base" {
         PYTHON_VERSION      = "${PYTHON_VERSION}"
         UV_VERSION          = "${UV_VERSION}"
         TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
-        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
         TORCH_FLAVOR        = "${CPU_TORCH_FLAVOR}"
     }
     platforms  = [ "linux/amd64" ]
@@ -204,8 +192,6 @@ target "amd-base" {
         PYTHON_VERSION      = "${PYTHON_VERSION}"
         UV_VERSION          = "${UV_VERSION}"
         TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCHVISION_VERSION = "${TORCHVISION_VERSION}"
-        TORCHAUDIO_VERSION  = "${TORCHAUDIO_VERSION}"
         TORCH_FLAVOR        = "${AMD_TORCH_FLAVOR}"
     }
     platforms  = [ "linux/amd64" ]
