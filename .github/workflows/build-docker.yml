@@ -35,38 +35,28 @@ jobs:
       image_label: ${{ inputs.image_label }}
       bake_target: ${{ inputs.bake_target }}
       push_images: ${{ inputs.push_images }}
+    secrets: inherit
 
   build:
     needs: [build-nvidia-builders]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix:
         base_flavor: [nvidia, cpu, amd]
-    env:
-      BASE_FLAVOR: ${{ matrix.base_flavor }}
-      SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build (flavor=${{ matrix.base_flavor }})
-        uses: ./.github/actions/bake-build
-        with:
-          comfyui_ref: ${{ inputs.comfyui_ref }}
-          image_label: ${{ inputs.image_label }}
-          targets: ${{ inputs.bake_target || 'default' }}
-          push: ${{ inputs.push_images && 'true' || 'false' }}
-          registry: ${{ env.REGISTRY }}
-          docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
-          registry_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_set: |
-            nvidia-xformers.args.MAX_JOBS=1
-            nvidia-xformers.args.NVCC_THREADS=4
-            nvidia-sageattention.args.MAX_JOBS=1
-            nvidia-sageattention.args.NVCC_THREADS=4
-            nvidia-nunchaku.args.MAX_JOBS=1
-            nvidia-nunchaku.args.NVCC_THREADS=4
-            nvidia-flashattention.args.MAX_JOBS=1
-            nvidia-flashattention.args.NVCC_THREADS=2
+    uses: ./.github/workflows/build-flavor.yml
+    with:
+      comfyui_ref: ${{ inputs.comfyui_ref }}
+      image_label: ${{ inputs.image_label }}
+      base_flavor: ${{ matrix.base_flavor }}
+      targets: ${{ inputs.bake_target || 'default' }}
+      push_images: ${{ inputs.push_images }}
+      extra_set: |
+        nvidia-xformers.args.MAX_JOBS=1
+        nvidia-xformers.args.NVCC_THREADS=4
+        nvidia-sageattention.args.MAX_JOBS=1
+        nvidia-sageattention.args.NVCC_THREADS=4
+        nvidia-nunchaku.args.MAX_JOBS=1
+        nvidia-nunchaku.args.NVCC_THREADS=4
+        nvidia-flashattention.args.MAX_JOBS=1
+        nvidia-flashattention.args.NVCC_THREADS=2
+    secrets: inherit

@@ -5,13 +5,30 @@ on:
     branches: [main]
 
 jobs:
-  build-pull-request:
-    uses: ./.github/workflows/build-docker.yml
+  build-pull-request-nvidia:
+    uses: ./.github/workflows/build-nvidia.yml
     with:
       comfyui_ref: "master"
       image_label: "master"
-      push_images: true
+      push_images: false
     permissions:
       contents: read
       packages: write
+    secrets: inherit
+
+  build-pull-request-base-flavors:
+    strategy:
+      fail-fast: false
+      matrix:
+        base_flavor: [cpu, amd]
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build-flavor.yml
+    with:
+      comfyui_ref: "master"
+      image_label: "master"
+      base_flavor: ${{ matrix.base_flavor }}
+      targets: default
+      push_images: false
     secrets: inherit
