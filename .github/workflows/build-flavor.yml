@@ -1,0 +1,56 @@
+name: Build Docker flavor
+
+on:
+  workflow_call:
+    inputs:
+      comfyui_ref:
+        description: "ComfyUI branch or tag to build from"
+        required: true
+        type: string
+      image_label:
+        description: "Label to apply to the built image"
+        required: true
+        type: string
+      base_flavor:
+        description: "Base flavor to build"
+        required: true
+        type: string
+      targets:
+        description: "Docker Bake target or group to build"
+        required: true
+        type: string
+      push_images:
+        description: "Whether built images should be pushed to the registry"
+        required: true
+        type: boolean
+      extra_set:
+        description: "Additional Bake set lines (optional)"
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY: ghcr.io
+      DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
+      IMAGE_LABEL: ${{ inputs.image_label }}
+      COMFYUI_VERSION: ${{ inputs.comfyui_ref }}
+      BASE_FLAVOR: ${{ inputs.base_flavor }}
+      SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (flavor=${{ inputs.base_flavor }})
+        uses: ./.github/actions/bake-build
+        with:
+          comfyui_ref: ${{ inputs.comfyui_ref }}
+          image_label: ${{ inputs.image_label }}
+          targets: ${{ inputs.targets }}
+          push: ${{ inputs.push_images && 'true' || 'false' }}
+          registry: ${{ env.REGISTRY }}
+          docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
+          registry_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_set: ${{ inputs.extra_set }}
