@@ -20,6 +20,8 @@ jobs:
       comfyui_sha: ${{ steps.comfyui.outputs.sha }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Install skopeo + jq + gh
         run: |
           sudo apt-get -qq update
@@ -28,9 +30,9 @@ jobs:
       - name: Get HEAD of comfyui
         id: comfyui
         run: |
-          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
+          sha=$(bash .github/scripts/resolve-comfyui-sha.sh "${{ inputs.comfyui_ref }}")
           echo "ComfyUI SHA: $sha"
-          echo "sha=$sha" >>"$GITHUB_OUTPUT"
+          printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
 
       - name: Get comfyui.sha label from latest built image
         id: current
