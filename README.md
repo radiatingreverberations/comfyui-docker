@@ -36,9 +36,13 @@ These images are currently published to the GitHub Container Registry:
 |Tag|Description|
 |---|-----------|
 |`latest`|Latest tagged release of ComfyUI for NVIDIA / CUDA 13.0|
+|`vX.Y.Z`|Latest image built for a specific tagged ComfyUI release for NVIDIA / CUDA 13.0|
 |`master`|Latest commit of the ComfyUI `master` branch for NVIDIA / CUDA 13.0|
 |`amd-latest` / `amd-master`|As above, but for AMD / ROCm 7.1|
 |`cpu-latest` / `cpu-master`|As above, but a plain Ubuntu base image without GPU support|
+|`amd-vX.Y.Z` / `cpu-vX.Y.Z`|Release-specific tags for AMD / ROCm 7.1 and CPU-only images|
+
+Release-specific tags track the current image for that upstream ComfyUI release and may move when this repository's Docker build logic changes.
 
 ## Running locally
 

@@ -11,6 +11,10 @@ on:
         description: "Label to apply to the built image"
         required: true
         type: string
+      extra_image_label:
+        description: "Optional additional label to apply after pushing images"
+        required: false
+        type: string
       bake_target:
         description: "Docker Bake target to build"
         required: false
@@ -59,4 +63,16 @@ jobs:
         nvidia-nunchaku.args.NVCC_THREADS=4
         nvidia-flashattention.args.MAX_JOBS=1
         nvidia-flashattention.args.NVCC_THREADS=2
+    secrets: inherit
+
+  tag-extra-label:
+    needs: [build]
+    if: ${{ inputs.push_images && inputs.extra_image_label != '' && inputs.bake_target == '' }}
+    uses: ./.github/workflows/tag-images.yml
+    with:
+      source_label: ${{ inputs.image_label }}
+      target_label: ${{ inputs.extra_image_label }}
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
