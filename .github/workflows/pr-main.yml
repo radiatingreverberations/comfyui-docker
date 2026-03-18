@@ -21,6 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         base_flavor: [cpu, amd]
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build-flavor.yml
     with:
       comfyui_ref: "master"
