@@ -11,6 +11,10 @@ on:
         description: "Image label to compare against"
         required: true
         type: string
+      extra_image_label:
+        description: "Optional additional label to apply after pushing images"
+        required: false
+        type: string
 
 jobs:
   check-comfyui:
@@ -18,8 +22,11 @@ jobs:
     outputs:
       changed: ${{ steps.compare.outputs.changed }}
       comfyui_sha: ${{ steps.comfyui.outputs.sha }}
+      extra_tag_needed: ${{ steps.compare.outputs.extra_tag_needed }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Install skopeo + jq + gh
         run: |
           sudo apt-get -qq update
@@ -28,31 +35,87 @@ jobs:
       - name: Get HEAD of comfyui
         id: comfyui
         run: |
-          sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
+          sha=$(bash .github/scripts/resolve-comfyui-sha.sh "${{ inputs.comfyui_ref }}")
           echo "ComfyUI SHA: $sha"
-          echo "sha=$sha" >>"$GITHUB_OUTPUT"
+          printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
 
       - name: Get comfyui.sha label from latest built image
         id: current
         run: |
-          image="ghcr.io/${{ github.repository_owner }}/comfyui-base:${{ inputs.image_label }}"
+          namespace="ghcr.io/${{ github.repository_owner }}"
+          source_label="${{ inputs.image_label }}"
+          extra_label="${{ inputs.extra_image_label }}"
+
+          get_digest() {
+            skopeo inspect docker://"$1" | jq -r '.Digest // empty'
+          }
+
+          image="${namespace}/comfyui-base:${source_label}"
           if skopeo inspect docker://"$image" >/dev/null 2>&1; then
             last=$(skopeo inspect docker://"$image" \
                      | jq -r '.Labels["comfyui.sha"] // empty')
           else
-            last=""        # tag doesn't exist
+            last=""
           fi
+
+          source_complete=true
+          for image_name in comfyui-base comfyui-extensions comfyui-ssh; do
+            for prefix in "" "cpu-" "amd-"; do
+              image="${namespace}/${image_name}:${prefix}${source_label}"
+              source_digest=$(get_digest "$image")
+              if [ -z "$source_digest" ]; then
+                echo "Missing source tag: $image"
+                source_complete=false
+              fi
+            done
+          done
+
+          extra_complete=false
+          if [ -n "$extra_label" ]; then
+            extra_complete=true
+            for image_name in comfyui-base comfyui-extensions comfyui-ssh; do
+              for prefix in "" "cpu-" "amd-"; do
+                source_image="${namespace}/${image_name}:${prefix}${source_label}"
+                source_digest=$(get_digest "$source_image")
+                if [ -z "$source_digest" ]; then
+                  continue
+                fi
+
+                extra_image="${namespace}/${image_name}:${prefix}${extra_label}"
+                extra_digest=$(get_digest "$extra_image")
+                if [ -z "$extra_digest" ]; then
+                  echo "Missing extra tag: $extra_image"
+                  extra_complete=false
+                elif [ "$extra_digest" != "$source_digest" ]; then
+                  echo "Mismatched extra tag: $extra_image"
+                  extra_complete=false
+                fi
+              done
+            done
+          fi
+
           echo "Current image SHA: $last"
           echo "sha=$last" >>"$GITHUB_OUTPUT"
+          echo "source_complete=$source_complete" >>"$GITHUB_OUTPUT"
+          echo "extra_complete=$extra_complete" >>"$GITHUB_OUTPUT"
 
       - name: Decide whether to rebuild
         id: compare
         run: |
-          if [ -n "${{ steps.current.outputs.sha }}" ] && \
+          if [ "${{ steps.current.outputs.source_complete }}" != "true" ] || \
+             [ -z "${{ steps.current.outputs.sha }}" ] || \
              [ "${{ steps.comfyui.outputs.sha }}" != "${{ steps.current.outputs.sha }}" ]; then
             echo "changed=true"  >>"$GITHUB_OUTPUT"
           else
             echo "changed=false" >>"$GITHUB_OUTPUT"
+          fi
+
+          if [ -n "${{ inputs.extra_image_label }}" ] && \
+             [ "${{ steps.current.outputs.source_complete }}" = "true" ] && \
+             [ "${{ steps.current.outputs.extra_complete }}" != "true" ]; then
+            echo "extra_tag_needed=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "extra_tag_needed=false" >>"$GITHUB_OUTPUT"
           fi
 
   build-docker:
@@ -65,7 +128,20 @@ jobs:
     with:
       comfyui_ref: "${{ inputs.comfyui_ref }}"
       image_label: "${{ inputs.image_label }}"
+      extra_image_label: "${{ inputs.extra_image_label }}"
       push_images: true
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+
+  tag-extra-label:
+    needs: check-comfyui
+    if: needs.check-comfyui.outputs.changed != 'true' && needs.check-comfyui.outputs.extra_tag_needed == 'true'
+    uses: ./.github/workflows/tag-images.yml
+    with:
+      source_label: "${{ inputs.image_label }}"
+      target_label: "${{ inputs.extra_image_label }}"
     permissions:
       contents: read
       packages: write

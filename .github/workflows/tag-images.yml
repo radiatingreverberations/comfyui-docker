@@ -1,0 +1,46 @@
+name: Tag existing images
+
+on:
+  workflow_call:
+    inputs:
+      source_label:
+        description: "Existing image label to copy from"
+        required: true
+        type: string
+      target_label:
+        description: "New image label to copy to"
+        required: true
+        type: string
+
+jobs:
+  tag-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Install skopeo
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y skopeo
+
+      - name: Tag release images
+        env:
+          REGISTRY: ghcr.io
+          SOURCE_LABEL: ${{ inputs.source_label }}
+          TARGET_LABEL: ${{ inputs.target_label }}
+          REGISTRY_NAMESPACE: ghcr.io/${{ github.repository_owner }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "$REGISTRY_TOKEN" | skopeo login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+
+          for image in comfyui-base comfyui-extensions comfyui-ssh; do
+            for prefix in "" "cpu-" "amd-"; do
+              src="${REGISTRY_NAMESPACE}/${image}:${prefix}${SOURCE_LABEL}"
+              dst="${REGISTRY_NAMESPACE}/${image}:${prefix}${TARGET_LABEL}"
+              echo "Tagging $src -> $dst"
+              skopeo copy --all "docker://${src}" "docker://${dst}"
+            done
+          done

@@ -61,8 +61,8 @@ runs:
       id: comfyui_ref
       shell: bash
       run: |
-        sha=$(git ls-remote https://github.com/comfyanonymous/ComfyUI.git ${{ inputs.comfyui_ref }} | cut -f1)
-        echo "sha=$sha" >> $GITHUB_OUTPUT
+        sha=$(bash "${{ github.action_path }}/../../scripts/resolve-comfyui-sha.sh" "${{ inputs.comfyui_ref }}")
+        printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
 
     - name: Normalize targets list
       id: targets

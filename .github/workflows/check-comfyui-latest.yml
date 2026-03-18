@@ -25,6 +25,7 @@ jobs:
     with:
       comfyui_ref: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
       image_label: "latest"
+      extra_image_label: "${{ needs.get-comfyui-latest-release.outputs.tag }}"
     permissions:
       contents: read
       packages: write
