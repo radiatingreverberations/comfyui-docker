@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
-# Activate virtual environment
-source venv/bin/activate
+VIRTUAL_ENV="${VIRTUAL_ENV:-/opt/venv}"
+
+# Activate the shared virtual environment from the base image
+source "${VIRTUAL_ENV}/bin/activate"
 
 # Ensure ComfyUI-Manager config exists and has use_uv = True
 python - <<'PYCFG'

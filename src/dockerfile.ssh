@@ -1,4 +1,5 @@
-FROM comfyui-extensions
+ARG COMFYUI_EXTENSIONS_IMAGE=comfyui-extensions
+FROM ${COMFYUI_EXTENSIONS_IMAGE}
 
 # Install OpenSSH server
 RUN apt-get update && \

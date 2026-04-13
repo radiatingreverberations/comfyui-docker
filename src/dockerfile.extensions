@@ -1,4 +1,5 @@
-FROM comfyui-base
+ARG COMFYUI_BASE_IMAGE=comfyui-base
+FROM ${COMFYUI_BASE_IMAGE}
 
 # Extensions are handled by ComfyUI-Manager which requires git
 RUN apt-get update && \
@@ -11,13 +12,11 @@ ENV COMFYUI_PATH=/comfyui
 
 # Install optional ComfyUI-Manager dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
-    uv pip install matrix-nio
+    uv pip install --python "${VIRTUAL_ENV}/bin/python" matrix-nio
 
 # Install required ComfyUI-Manager dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
-    uv pip install -r /comfyui/manager_requirements.txt
+    uv pip install --python "${VIRTUAL_ENV}/bin/python" -r /comfyui/manager_requirements.txt
 
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh

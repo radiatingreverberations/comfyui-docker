@@ -1,9 +1,12 @@
-FROM base
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+WORKDIR /comfyui
 
 # Install common dependencies that are typically not ComfyUI version specific
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
     uv pip install \
+    --python "${VIRTUAL_ENV}/bin/python" \
     einops \
     tokenizers \
     pyyaml \
@@ -17,8 +20,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 
 # Additional dependencies not strictly required by ComfyUI
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
     uv pip install \
+    --python "${VIRTUAL_ENV}/bin/python" \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer]
 
@@ -34,8 +37,7 @@ RUN mkdir -p /comfyui && \
 
 # Install remaining ComfyUI version specific dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    . venv/bin/activate && \
-    uv pip install -r requirements.txt
+    uv pip install --python "${VIRTUAL_ENV}/bin/python" -r requirements.txt
 
 # ComfyUI defaults to port 8188
 EXPOSE 8188

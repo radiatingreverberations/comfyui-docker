@@ -4,32 +4,14 @@ variable "DOCKER_REGISTRY_URL" {
 variable "COMFYUI_VERSION" {
     default = "master"
 }
-variable "PYTHON_VERSION" {
-    default = "3.12"
+variable "CPU_BASE_IMAGE" {
+    default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu"
 }
-variable "UV_VERSION" {
-    default = "0.10.11"
+variable "AMD_BASE_IMAGE" {
+    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1.1"
 }
-variable "TORCH_VERSION" {
-    default = "2.10.0"
-}
-variable "NVIDIA_CUDA_RUNTIME_IMAGE" {
-    default = "nvidia/cuda:13.0.2-runtime-ubuntu24.04"
-}
-variable "NVIDIA_CUDA_DEVEL_IMAGE" {
-    default = "nvidia/cuda:13.0.2-devel-ubuntu24.04"
-}
-variable "NVIDIA_TORCH_FLAVOR" {
-    default = "cu130"
-}
-variable "AMD_ROCM_IMAGE" {
-    default = "rocm/dev-ubuntu-24.04:7.1"
-}
-variable "AMD_TORCH_FLAVOR" {
-    default = "rocm7.1"
-}
-variable "CPU_TORCH_FLAVOR" {
-    default = "cpu"
+variable "NVIDIA_BASE_IMAGE" {
+    default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.10.0-cuda13.0.2"
 }
 variable "IMAGE_LABEL" {
     default = "latest"
@@ -46,35 +28,6 @@ variable "BASE_FLAVOR" {
     }
 }
 
-group "nvidia-base" {
-    targets = [
-        "nvidia-builder",
-        "nvidia-sageattention",
-        "nvidia-nunchaku",
-        "nvidia-xformers",
-        "nvidia-flashattention",
-        "nvidia-base",
-    ]
-}
-
-group "cpu-base" {
-    targets = [
-        "cpu-base",
-    ]
-}
-
-group "amd-base" {
-    targets = [
-        "amd-base",
-    ]
-}
-
-group "base" {
-    targets = [
-        "${BASE_FLAVOR}-base",
-    ]
-}
-
 group "default" {
     targets = [
         "comfyui-base",
@@ -83,131 +36,12 @@ group "default" {
     ]
 }
 
-target "nvidia-builder" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.builder"
-    args = {
-        CUDA_DEVEL_IMAGE    = "${NVIDIA_CUDA_DEVEL_IMAGE}"
-        PYTHON_VERSION      = "${PYTHON_VERSION}"
-        UV_VERSION          = "${UV_VERSION}"
-        TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:latest"]
-    cache-to   = ["type=inline"]
-}
-
-target "nvidia-sageattention" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.sageattention"
-    contexts = {
-        builder = "target:nvidia-builder"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:sageattention"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:sageattention"]
-    cache-to   = ["type=inline"]
-}
-
-target "nvidia-nunchaku" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.nunchaku"
-    contexts = {
-        builder = "target:nvidia-builder"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:nunchaku"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:nunchaku"]
-    cache-to   = ["type=inline"]
-}
-
-target "nvidia-xformers" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.xformers"
-    contexts = {
-        builder = "target:nvidia-builder"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:xformers"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:xformers"]
-    cache-to   = ["type=inline"]
-}
-
-target "nvidia-flashattention" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.flashattention"
-    contexts = {
-        builder = "target:nvidia-builder"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}nvidia-builder:flashattention"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}nvidia-builder:flashattention"]
-    cache-to   = ["type=inline"]
-}
-
-target "nvidia-base" {
-    context = "src"
-    dockerfile = "dockerfile.nvidia.base"
-    contexts = {
-        sageattention  = "target:nvidia-sageattention"
-        nunchaku       = "target:nvidia-nunchaku"
-        xformers       = "target:nvidia-xformers"
-        flashattention = "target:nvidia-flashattention"
-    }
-    args = {
-        CUDA_RUNTIME_IMAGE  = "${NVIDIA_CUDA_RUNTIME_IMAGE}"
-        PYTHON_VERSION      = "${PYTHON_VERSION}"
-        UV_VERSION          = "${UV_VERSION}"
-        TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCH_FLAVOR        = "${NVIDIA_TORCH_FLAVOR}"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:nvidia"]
-    cache-to   = ["type=inline"]
-}
-
-target "cpu-base" {
-    context = "src"
-    dockerfile = "dockerfile.cpu.base"
-    args = {
-        PYTHON_VERSION      = "${PYTHON_VERSION}"
-        UV_VERSION          = "${UV_VERSION}"
-        TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCH_FLAVOR        = "${CPU_TORCH_FLAVOR}"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:cpu"]
-    cache-to   = ["type=inline"]
-}
-
-target "amd-base" {
-    context = "src"
-    dockerfile = "dockerfile.amd.base"
-    args = {
-        ROCM_IMAGE          = "${AMD_ROCM_IMAGE}"
-        PYTHON_VERSION      = "${PYTHON_VERSION}"
-        UV_VERSION          = "${UV_VERSION}"
-        TORCH_VERSION       = "${TORCH_VERSION}"
-        TORCH_FLAVOR        = "${AMD_TORCH_FLAVOR}"
-    }
-    platforms  = [ "linux/amd64" ]
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:amd"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:amd"]
-    cache-to   = ["type=inline"]
-}
-
 target "comfyui-base" {
     context    = "src"
     dockerfile = "dockerfile.base"
-    contexts = {
-        base = "target:${BASE_FLAVOR}-base"
-    }
     args = {
         COMFYUI_VERSION = "${COMFYUI_VERSION}"
+        BASE_IMAGE      = BASE_FLAVOR == "nvidia" ? NVIDIA_BASE_IMAGE : BASE_FLAVOR == "amd" ? AMD_BASE_IMAGE : CPU_BASE_IMAGE
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
@@ -221,6 +55,9 @@ target "comfyui-extensions" {
     contexts = {
         comfyui-base = "target:comfyui-base"
     }
+    args = {
+        COMFYUI_BASE_IMAGE = "comfyui-base"
+    }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
@@ -232,6 +69,9 @@ target "comfyui-ssh" {
     dockerfile = "dockerfile.ssh"
     contexts = {
         comfyui-extensions = "target:comfyui-extensions"
+    }
+    args = {
+        COMFYUI_EXTENSIONS_IMAGE = "comfyui-extensions"
     }
     secret     = ["id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64"]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]

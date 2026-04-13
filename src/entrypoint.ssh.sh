@@ -173,8 +173,8 @@ cat >/etc/profile.d/comfyui-venv.sh <<'EOF'
 if [ -n "${BASH_VERSION:-}" ]; then
   case $- in
     *i*)
-      if [ -z "${VIRTUAL_ENV:-}" ] && [ -f /comfyui/venv/bin/activate ]; then
-        . /comfyui/venv/bin/activate
+      if [ -z "${VIRTUAL_ENV:-}" ] && [ -f /opt/venv/bin/activate ]; then
+        . /opt/venv/bin/activate
       fi
     ;;
   esac
