@@ -22,5 +22,8 @@ else:
 		cfg.write(f)
 PYCFG
 
+# Ensure requirements of custom nodes are installed
+cm-cli uv-sync
+
 # Continue with original entrypoint
 exec ./entrypoint.base.sh --enable-manager "$@"
