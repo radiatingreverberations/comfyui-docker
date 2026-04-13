@@ -2,8 +2,6 @@
 
 This repository provides Docker build configurations that package [ComfyUI](https://github.com/comfyanonymous/ComfyUI) together with all prerequisites, in a few different flavors. It also contains GitHub Actions definitions that can build and publish them to the GitHub Container Registry.
 
-The hardware/runtime base images are consumed from [`ghcr.io/offloadr/base`](https://github.com/offloadr/base). This repository builds the ComfyUI application layers on top of those published bases.
-
 ## Use cases
 
 * Running on a GPU cloud provider like [RunPod](https://www.runpod.io/), [QuickPod](https://quickpod.io/), [Vast.ai](https://vast.ai/) or [TensorDock](https://tensordock.com/).
@@ -118,72 +116,11 @@ When running Docker images on Windows, it most likely runs on a Linux VM under W
 
 ## Running on a cloud provider
 
-If you were to simply open the ComfyUI port on your container, anyone on the internet will be able to connect, and all the traffic between your computer and the cloud provider would be unencrypted. One solution to this is to use the `ssh` image.
-
-### Connecting using SSH
-
-The `ssh` image starts an OpenSSH server on port 2222. So when running on a cloud provider, you would typically want to run a command like this:
-
-```shell
-docker run --gpus=all -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
-```
-
-The `ssh` image will display additional details on how to connect to the instance:
-
-```plaintext
-================================================================================
- ComfyUI + SSH Tunnel
-================================================================================
- User:        u-f0f1c7f3c8d148548dc4875c330849
- SSH Port:    2222
- Host key ID: SHA256:svSLAqHOM1w/Z2K9vSkssXHUcp6+XVtrqyUp4Wfgres
-
- Public IPv4: 123.456.789.101
-
- How to connect:
-   ssh -p 2222 u-f0f1c7f3c8d148548dc4875c330849@123.456.789.101 -L 8188:127.0.0.1:8188
-
- Note! The actual IP address and port you need to connect to may be different
- depending on your hosting provider. Check their dashboard for the correct
- values if the above does not work.
-================================================================================
-```
-
-### Security and configuration
-
-By default the image will randomly generate a username and display it at startup. As this username is only known to you, no one else will be able to connect. It is also possible to configure the username by setting the `SSH_USER` environment variable:
-
-```shell
-docker run --gpus=all -e SSH_USER=u-f0f1mysecretuser0849 -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
-```
-
-This way you will not need to look at the console output to find it. To remain secure, ensure that the username you configure is not easy to guess. Alternatively, use key authentication by specifying your public key with `SSH_KEY`:
-
-```shell
-docker run --gpus=all -e SSH_USER=me -e SSH_KEY="ssh-ed25519 AAA...Qma" -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
-```
-
-Or even a password using `SSH_PASSWORD`:
-
-```shell
-docker run --gpus=all -e SSH_USER=me -e SSH_PASSWORD=extra-super-secret -p 2222:2222 ghcr.io/radiatingreverberations/comfyui-ssh:latest
-```
-
-Note: The published SSH image uses a static (pinned) host key. Its SHA256 fingerprint is printed at startup; verify it on first connect and expect it to remain unchanged across restarts and updates.
-
-### Download workflow models
-
-A simple script for downloading model files on the host is provided in the `ssh` image. After connecting over SSH, save the workflow you want to use from the UI. Then run something like:
-
-```bash
-download_workflow_models.py user/default/workflows/t2i-qwen.json
-```
-
-This works with workflows containing model links, such as those provided as templates in ComfyUI.
+If you want to run ComfyUI on a cloud provider without exposing the web UI directly, use the `ssh` image and connect through an SSH tunnel. The full setup and security notes are documented in [SSH.md](SSH.md).
 
 ## Building
 
-Instead of using the pre-built images it is also possible to build them locally. Hardware/runtime dependencies are not built in this repository anymore, so the corresponding base images must already exist in `ghcr.io/offloadr/base` or be overridden explicitly.
+Instead of using the pre-built images it is also possible to build them locally.
 
 ```shell
 docker buildx bake
@@ -203,13 +140,14 @@ To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD
 
 * [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 * [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
-* [uv 0.10.11](https://docs.astral.sh/uv/)
-* [PyTorch 2.10.0](https://pytorch.org/projects/pytorch/)
 
-### External hardware base images
+### ComfyUI extensions image
 
-This repository consumes published hardware/runtime bases from `ghcr.io/offloadr/base`:
+* [git](https://git-scm.com/)
+* [ComfyUI Manager](https://github.com/comfy-org/ComfyUI#comfyui-manager)
 
-* `cpu-core` for CPU-only builds
-* `amd-core` for AMD / ROCm builds
-* `nvidia-full` for NVIDIA / CUDA builds, including [xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/woct0rdho/SageAttention.git), and [Nunchaku](https://github.com/nunchaku-tech/nunchaku)
+### ComfyUI SSH image
+
+* [OpenSSH](https://www.openssh.org/)
+* [curl](https://curl.se/)
+* [rsync](https://rsync.samba.org/)
