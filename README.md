@@ -38,9 +38,9 @@ These images are currently published to the GitHub Container Registry:
 |`latest`|Latest tagged release of ComfyUI for NVIDIA / CUDA 13.0|
 |`vX.Y.Z`|Latest image built for a specific tagged ComfyUI release for NVIDIA / CUDA 13.0|
 |`master`|Latest commit of the ComfyUI `master` branch for NVIDIA / CUDA 13.0|
-|`amd-latest` / `amd-master`|As above, but for AMD / ROCm 7.1|
+|`amd-latest` / `amd-master`|As above, but for AMD / ROCm 7.1.1|
 |`cpu-latest` / `cpu-master`|As above, but a plain Ubuntu base image without GPU support|
-|`amd-vX.Y.Z` / `cpu-vX.Y.Z`|Release-specific tags for AMD / ROCm 7.1 and CPU-only images|
+|`amd-vX.Y.Z` / `cpu-vX.Y.Z`|Release-specific tags for AMD / ROCm 7.1.1 and CPU-only images|
 
 Release-specific tags track the current image for that upstream ComfyUI release and may move when this repository's Docker build logic changes.
 
@@ -129,7 +129,7 @@ docker buildx bake
 By default local builds consume:
 
 * `ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu`
-* `ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1`
+* `ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1.1`
 * `ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.10.0-cuda13.0.2`
 
 To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.

@@ -8,7 +8,7 @@ variable "CPU_BASE_IMAGE" {
     default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu"
 }
 variable "AMD_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1"
+    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1.1"
 }
 variable "NVIDIA_BASE_IMAGE" {
     default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.10.0-cuda13.0.2"
