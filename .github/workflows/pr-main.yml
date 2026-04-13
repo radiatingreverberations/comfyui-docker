@@ -5,22 +5,11 @@ on:
     branches: [main]
 
 jobs:
-  build-pull-request-nvidia:
-    uses: ./.github/workflows/build-nvidia.yml
-    with:
-      comfyui_ref: "master"
-      image_label: "master"
-      push_images: false
-    permissions:
-      contents: read
-      packages: write
-    secrets: inherit
-
-  build-pull-request-base-flavors:
+  build-pull-request-flavors:
     strategy:
       fail-fast: false
       matrix:
-        base_flavor: [cpu, amd]
+        base_flavor: [nvidia, cpu, amd]
     permissions:
       contents: read
       packages: write

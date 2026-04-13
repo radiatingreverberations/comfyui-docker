@@ -24,25 +24,8 @@ on:
         required: true
         type: boolean
 
-env:
-  REGISTRY: ghcr.io
-  DOCKER_REGISTRY_URL: ghcr.io/${{ github.repository_owner }}/
-  IMAGE_LABEL: ${{ inputs.image_label }}
-  COMFYUI_VERSION: ${{ inputs.comfyui_ref }}
-
 jobs:
-  build-nvidia-builders:
-    name: Build NVIDIA builder images
-    uses: ./.github/workflows/build-nvidia.yml
-    with:
-      comfyui_ref: ${{ inputs.comfyui_ref }}
-      image_label: ${{ inputs.image_label }}
-      bake_target: ${{ inputs.bake_target }}
-      push_images: ${{ inputs.push_images }}
-    secrets: inherit
-
   build:
-    needs: [build-nvidia-builders]
     strategy:
       fail-fast: false
       matrix:
@@ -54,15 +37,6 @@ jobs:
       base_flavor: ${{ matrix.base_flavor }}
       targets: ${{ inputs.bake_target || 'default' }}
       push_images: ${{ inputs.push_images }}
-      extra_set: |
-        nvidia-xformers.args.MAX_JOBS=1
-        nvidia-xformers.args.NVCC_THREADS=4
-        nvidia-sageattention.args.MAX_JOBS=1
-        nvidia-sageattention.args.NVCC_THREADS=4
-        nvidia-nunchaku.args.MAX_JOBS=1
-        nvidia-nunchaku.args.NVCC_THREADS=4
-        nvidia-flashattention.args.MAX_JOBS=1
-        nvidia-flashattention.args.NVCC_THREADS=2
     secrets: inherit
 
   tag-extra-label:

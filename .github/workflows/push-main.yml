@@ -19,23 +19,7 @@ jobs:
           repo: ComfyUI
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  build-base:
-    concurrency:
-      group: build-base
-      cancel-in-progress: true
-    uses: ./.github/workflows/build-docker.yml
-    with:
-      comfyui_ref: "master"
-      image_label: "master"
-      bake_target: "base"
-      push_images: true
-    permissions:
-      contents: read
-      packages: write
-    secrets: inherit
-
   build-comfyui-master:
-    needs: build-base
     concurrency:
       group: build-master
       cancel-in-progress: true
@@ -50,7 +34,7 @@ jobs:
     secrets: inherit
 
   build-comfyui-latest-release:
-    needs: [get-comfyui-latest-release, build-base]
+    needs: [get-comfyui-latest-release]
     concurrency:
       group: build-latest
       cancel-in-progress: true

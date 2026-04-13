@@ -2,6 +2,8 @@
 
 This repository provides Docker build configurations that package [ComfyUI](https://github.com/comfyanonymous/ComfyUI) together with all prerequisites, in a few different flavors. It also contains GitHub Actions definitions that can build and publish them to the GitHub Container Registry.
 
+The hardware/runtime base images are consumed from [`ghcr.io/offloadr/base`](https://github.com/offloadr/base). This repository builds the ComfyUI application layers on top of those published bases.
+
 ## Use cases
 
 * Running on a GPU cloud provider like [RunPod](https://www.runpod.io/), [QuickPod](https://quickpod.io/), [Vast.ai](https://vast.ai/) or [TensorDock](https://tensordock.com/).
@@ -181,11 +183,19 @@ This works with workflows containing model links, such as those provided as temp
 
 ## Building
 
-Instead of using the pre-built images it is also possible to build them locally.
+Instead of using the pre-built images it is also possible to build them locally. Hardware/runtime dependencies are not built in this repository anymore, so the corresponding base images must already exist in `ghcr.io/offloadr/base` or be overridden explicitly.
 
 ```shell
 docker buildx bake
 ```
+
+By default local builds consume:
+
+* `ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu`
+* `ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1`
+* `ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.10.0-cuda13.0.2`
+
+To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.
 
 ## Image details
 
@@ -193,18 +203,13 @@ docker buildx bake
 
 * [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 * [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
-* [uv 0.10.9](https://docs.astral.sh/uv/)
+* [uv 0.10.11](https://docs.astral.sh/uv/)
 * [PyTorch 2.10.0](https://pytorch.org/projects/pytorch/)
 
-### NVIDIA base image
+### External hardware base images
 
-NVIDIA CUDA runtime image: [nvidia/cuda:13.0.0-runtime-ubuntu24.04](https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/13.0.2/ubuntu2404/runtime/Dockerfile?ref_type=heads), Python 3.12, git and additional components:
+This repository consumes published hardware/runtime bases from `ghcr.io/offloadr/base`:
 
-* [xFormers](https://github.com/facebookresearch/xformers)
-* [FlashAttention-2](https://github.com/Dao-AILab/flash-attention)
-* [SageAttention2++](https://github.com/woct0rdho/SageAttention.git)
-* [Nunchaku](https://github.com/nunchaku-tech/nunchaku)
-
-### AMD base image
-
-AMD ROCm runtime image: [rocm/dev-ubuntu-24.04:7.1](https://hub.docker.com/r/rocm/dev-ubuntu-24.04/tags)
+* `cpu-core` for CPU-only builds
+* `amd-core` for AMD / ROCm builds
+* `nvidia-full` for NVIDIA / CUDA builds, including [xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/woct0rdho/SageAttention.git), and [Nunchaku](https://github.com/nunchaku-tech/nunchaku)
