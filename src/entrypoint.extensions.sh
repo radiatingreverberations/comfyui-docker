@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
 
-VIRTUAL_ENV="${VIRTUAL_ENV:-/opt/venv}"
-
-# Activate the shared virtual environment from the base image
-source "${VIRTUAL_ENV}/bin/activate"
+# Create and activate the runtime virtual environment on demand.
+source ./runtime-venv.sh
 
 # Ensure ComfyUI-Manager config exists and has use_uv = True
 python - <<'PYCFG'

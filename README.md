@@ -60,6 +60,8 @@ Additional arguments will be forwarded to ComfyUI. For example, to enable SageAt
 docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest --use-sage-attention
 ```
 
+On first container start, the entrypoint creates `/opt/venv` if it does not already exist. That runtime venv inherits the system packages baked into the base image.
+
 ### With persistent storage
 
 Without any additional configuration, any files created from ComfyUI will be lost whenever the container is removed or recreated, such as when updating to a new version. So when running locally, you most likely want certain directories to be located outside of the container. For persistent storage, mount these directories:

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+source ./runtime-venv.sh
+
 # Generate random long username; expose it for users to read
 SSH_USER="${SSH_USER:-u-$(tr -d '-' </proc/sys/kernel/random/uuid | cut -c1-30)}"
 
@@ -168,18 +170,20 @@ Subsystem sftp internal-sftp
 EOF
 
 # Auto-activate the ComfyUI virtual environment for interactive bash sessions
+RUNTIME_VENV="${VIRTUAL_ENV}"
 cat >/etc/profile.d/comfyui-venv.sh <<'EOF'
 # Auto-activate ComfyUI venv for interactive sessions
 if [ -n "${BASH_VERSION:-}" ]; then
   case $- in
     *i*)
-      if [ -z "${VIRTUAL_ENV:-}" ] && [ -f /opt/venv/bin/activate ]; then
-        . /opt/venv/bin/activate
+      if [ -z "${VIRTUAL_ENV:-}" ] && [ -f __RUNTIME_VENV__/bin/activate ]; then
+        . __RUNTIME_VENV__/bin/activate
       fi
     ;;
   esac
 fi
 EOF
+sed -i "s|__RUNTIME_VENV__|${RUNTIME_VENV}|g" /etc/profile.d/comfyui-venv.sh
 chmod 0644 /etc/profile.d/comfyui-venv.sh
 
 # Prepare SSH daemon directory and start in background
