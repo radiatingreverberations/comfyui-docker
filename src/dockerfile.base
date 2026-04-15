@@ -6,7 +6,8 @@ WORKDIR /comfyui
 # Install common dependencies that are typically not ComfyUI version specific
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     uv pip install \
-    --python "${VIRTUAL_ENV}/bin/python" \
+    --system \
+    --break-system-packages \
     einops \
     tokenizers \
     pyyaml \
@@ -21,7 +22,8 @@ RUN --mount=type=cache,target=/cache/uv,sharing=locked \
 # Additional dependencies not strictly required by ComfyUI
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
     uv pip install \
-    --python "${VIRTUAL_ENV}/bin/python" \
+    --system \
+    --break-system-packages \
     huggingface_hub[cli] \
     huggingface_hub[hf_transfer]
 
@@ -37,7 +39,7 @@ RUN mkdir -p /comfyui && \
 
 # Install remaining ComfyUI version specific dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    uv pip install --python "${VIRTUAL_ENV}/bin/python" -r requirements.txt
+    uv pip install --system --break-system-packages -r requirements.txt
 
 # ComfyUI defaults to port 8188
 EXPOSE 8188
@@ -47,6 +49,11 @@ ENV PYTHONUNBUFFERED=1
 
 # Allow xFormers to skip FlashAttention version compatibility check
 ENV XFORMERS_IGNORE_FLASH_VERSION_CHECK=1
+
+# Add runtime venv helper
+COPY runtime-venv.sh runtime-venv.sh
+RUN sed -i 's/\r$//' runtime-venv.sh
+RUN chmod +x runtime-venv.sh
 
 # Add entrypoint script
 COPY entrypoint.base.sh entrypoint.base.sh

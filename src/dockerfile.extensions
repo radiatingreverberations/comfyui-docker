@@ -12,11 +12,11 @@ ENV COMFYUI_PATH=/comfyui
 
 # Install optional ComfyUI-Manager dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    uv pip install --python "${VIRTUAL_ENV}/bin/python" matrix-nio
+    uv pip install --system --break-system-packages matrix-nio
 
 # Install required ComfyUI-Manager dependencies
 RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    uv pip install --python "${VIRTUAL_ENV}/bin/python" -r /comfyui/manager_requirements.txt
+    uv pip install --system --break-system-packages -r /comfyui/manager_requirements.txt
 
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh
