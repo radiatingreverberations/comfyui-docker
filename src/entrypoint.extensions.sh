@@ -22,8 +22,8 @@ else:
 		cfg.write(f)
 PYCFG
 
-# Ensure requirements of custom nodes are installed
-cm-cli uv-sync
+# Ensure requirements of custom nodes are installed from the runtime venv.
+python -m cm_cli uv-sync
 
 # Continue with original entrypoint
 exec ./entrypoint.base.sh --enable-manager "$@"
