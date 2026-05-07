@@ -10,6 +10,20 @@ comfyui_uv_install_cached() {
     uv pip install --python "${VIRTUAL_ENV}/bin/python" "$@"
 }
 
+comfyui_install_frontend_package_copy() {
+    frontend_requirement="$(grep -E '^comfyui-frontend-package==' "${RUNTIME_DIR}/requirements.lock.txt" || true)"
+    if [ -z "${frontend_requirement}" ]; then
+        return
+    fi
+
+    uv pip install \
+        --python "${VIRTUAL_ENV}/bin/python" \
+        --link-mode copy \
+        --reinstall-package comfyui-frontend-package \
+        --no-deps \
+        "${frontend_requirement}"
+}
+
 if [ "${COMFYUI_RUNTIME_VENV_READY:-}" != "${VIRTUAL_ENV}" ]; then
     : "${OFFLOADR_TORCH_VERSION:?OFFLOADR_TORCH_VERSION must be set by the base image}"
     : "${OFFLOADR_TORCHVISION_VERSION:?OFFLOADR_TORCHVISION_VERSION must be set by the base image}"
@@ -40,6 +54,8 @@ if [ "${COMFYUI_RUNTIME_VENV_READY:-}" != "${VIRTUAL_ENV}" ]; then
             comfyui_uv_install_cached "${wheel_args[@]}"
         fi
     fi
+
+    comfyui_install_frontend_package_copy
 
     export COMFYUI_RUNTIME_VENV_READY="${VIRTUAL_ENV}"
 fi
