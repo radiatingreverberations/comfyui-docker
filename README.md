@@ -60,7 +60,7 @@ Additional arguments will be forwarded to ComfyUI. For example, to enable SageAt
 docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest --use-sage-attention
 ```
 
-On first container start, the entrypoint creates `/opt/venv` if it does not already exist. That runtime venv inherits the system packages baked into the base image.
+On container start, the entrypoint creates the runtime virtual environment selected by `VIRTUAL_ENV`, defaulting to `/opt/venv`.
 
 ### With persistent storage
 
@@ -141,7 +141,6 @@ To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD
 ### ComfyUI base image
 
 * [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
-* [HuggingFace CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
 
 ### ComfyUI extensions image
 

@@ -1,0 +1,12 @@
+einops
+tokenizers
+pyyaml
+pillow
+scipy
+tqdm
+psutil
+kornia
+spandrel
+soundfile
+huggingface_hub
+hf_transfer

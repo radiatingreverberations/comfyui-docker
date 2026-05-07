@@ -22,6 +22,10 @@ else:
 		cfg.write(f)
 PYCFG
 
+comfyui_uv_install_cached \
+	--no-deps \
+	-r /comfyui/manager_requirements.lock.txt
+
 # Ensure requirements of custom nodes are installed from the runtime venv.
 python -m cm_cli uv-sync
 

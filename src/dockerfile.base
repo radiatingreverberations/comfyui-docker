@@ -1,31 +1,29 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu
 FROM ${BASE_IMAGE}
 
 WORKDIR /comfyui
 
-# Install common dependencies that are typically not ComfyUI version specific
-RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    uv pip install \
-    --system \
-    --break-system-packages \
-    einops \
-    tokenizers \
-    pyyaml \
-    pillow \
-    scipy \
-    tqdm \
-    psutil \
-    kornia \
-    spandrel \
-    soundfile
+ENV UV_CACHE_DIR=/opt/uv-cache
+ENV UV_LINK_MODE=symlink
+RUN mkdir -p /opt/uv-cache
 
-# Additional dependencies not strictly required by ComfyUI
-RUN --mount=type=cache,target=/cache/uv,sharing=locked \
+# Extend the upstream baked uv cache with common ComfyUI runtime dependencies.
+COPY requirements.cached.txt requirements.cached.txt
+RUN test -n "${OFFLOADR_TORCH_VERSION}" && \
+    test -n "${OFFLOADR_TORCHVISION_VERSION}" && \
+    test -n "${OFFLOADR_TORCH_INDEX_URL}" && \
+    uv venv /tmp/comfyui-cache-venv && \
     uv pip install \
-    --system \
-    --break-system-packages \
-    huggingface_hub[cli] \
-    huggingface_hub[hf_transfer]
+    --python /tmp/comfyui-cache-venv/bin/python \
+    torch==${OFFLOADR_TORCH_VERSION} \
+    torchvision==${OFFLOADR_TORCHVISION_VERSION} \
+    torchaudio==${OFFLOADR_TORCH_VERSION} \
+    --index-url ${OFFLOADR_TORCH_INDEX_URL} && \
+    uv pip install \
+    --python /tmp/comfyui-cache-venv/bin/python \
+    -r requirements.cached.txt && \
+    rm -rf /tmp/comfyui-cache-venv && \
+    chmod -R u+rwX,go+rX,go-w /opt/uv-cache
 
 # Allow cache invalidation of ComfyUI version even if the ref has not changed
 ARG REFRESH_COMFYUI=0
@@ -37,9 +35,26 @@ RUN mkdir -p /comfyui && \
     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
     rm -rf /tmp/comfyui.tar.gz
 
-# Install remaining ComfyUI version specific dependencies
-RUN --mount=type=cache,target=/cache/uv,sharing=locked \
-    uv pip install --system --break-system-packages -r requirements.txt
+# Extend the upstream baked uv cache with ComfyUI version specific dependencies.
+RUN test -n "${OFFLOADR_TORCH_VERSION}" && \
+    test -n "${OFFLOADR_TORCHVISION_VERSION}" && \
+    test -n "${OFFLOADR_TORCH_INDEX_URL}" && \
+    uv venv /tmp/comfyui-cache-venv && \
+    uv pip install \
+    --python /tmp/comfyui-cache-venv/bin/python \
+    torch==${OFFLOADR_TORCH_VERSION} \
+    torchvision==${OFFLOADR_TORCHVISION_VERSION} \
+    torchaudio==${OFFLOADR_TORCH_VERSION} \
+    --index-url ${OFFLOADR_TORCH_INDEX_URL} && \
+    uv pip freeze --python /tmp/comfyui-cache-venv/bin/python | sort > /tmp/comfyui-torch.freeze && \
+    uv pip install \
+    --python /tmp/comfyui-cache-venv/bin/python \
+    -r requirements.cached.txt \
+    -r requirements.txt && \
+    uv pip freeze --python /tmp/comfyui-cache-venv/bin/python | sort > /tmp/comfyui-full.freeze && \
+    comm -13 /tmp/comfyui-torch.freeze /tmp/comfyui-full.freeze > requirements.lock.txt && \
+    rm -rf /tmp/comfyui-cache-venv /tmp/comfyui-torch.freeze /tmp/comfyui-full.freeze && \
+    chmod -R u+rwX,go+rX,go-w /opt/uv-cache
 
 # ComfyUI defaults to port 8188
 EXPOSE 8188
