@@ -16,10 +16,13 @@ comfyui_install_frontend_package_copy() {
         return
     fi
 
+    uv pip uninstall \
+        --python "${VIRTUAL_ENV}/bin/python" \
+        comfyui-frontend-package
+
     uv pip install \
         --python "${VIRTUAL_ENV}/bin/python" \
         --link-mode copy \
-        --reinstall-package comfyui-frontend-package \
         --no-deps \
         "${frontend_requirement}"
 }
