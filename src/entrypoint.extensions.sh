@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Create and activate the runtime virtual environment on demand.
+# Activate the baked application virtual environment.
 source ./runtime-venv.sh
 
 # Ensure ComfyUI-Manager config exists and has use_uv = True
@@ -21,10 +21,6 @@ else:
 	with cfg_path.open('w') as f:
 		cfg.write(f)
 PYCFG
-
-comfyui_uv_install_cached \
-	--no-deps \
-	-r /comfyui/manager_requirements.lock.txt
 
 # Ensure requirements of custom nodes are installed from the runtime venv.
 python -m cm_cli uv-sync
