@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Create and activate the runtime virtual environment on demand.
+# Activate the baked application virtual environment.
 source ./runtime-venv.sh
 
 # Inject mandatory --cpu flag for CPU-only images unless already present

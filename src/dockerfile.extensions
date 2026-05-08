@@ -10,30 +10,16 @@ RUN apt-get update && \
 # Required by ComfyUI-Manager
 ENV COMFYUI_PATH=/comfyui
 
-# Extend the upstream baked uv cache with ComfyUI-Manager dependencies.
-RUN test -n "${OFFLOADR_TORCH_VERSION}" && \
-    test -n "${OFFLOADR_TORCHVISION_VERSION}" && \
-    test -n "${OFFLOADR_TORCH_INDEX_URL}" && \
-    uv venv /tmp/comfyui-manager-cache-venv && \
-    uv pip install \
-    --python /tmp/comfyui-manager-cache-venv/bin/python \
-    torch==${OFFLOADR_TORCH_VERSION} \
-    torchvision==${OFFLOADR_TORCHVISION_VERSION} \
-    torchaudio==${OFFLOADR_TORCH_VERSION} \
-    --index-url ${OFFLOADR_TORCH_INDEX_URL} && \
-    uv pip install \
-    --python /tmp/comfyui-manager-cache-venv/bin/python \
-    --no-deps \
-    -r /comfyui/requirements.lock.txt && \
-    uv pip freeze --python /tmp/comfyui-manager-cache-venv/bin/python | sort > /tmp/comfyui-base.freeze && \
-    uv pip install \
-    --python /tmp/comfyui-manager-cache-venv/bin/python \
-    matrix-nio \
-    -r /comfyui/manager_requirements.txt && \
-    uv pip freeze --python /tmp/comfyui-manager-cache-venv/bin/python | sort > /tmp/comfyui-manager.freeze && \
-    comm -13 /tmp/comfyui-base.freeze /tmp/comfyui-manager.freeze > /comfyui/manager_requirements.lock.txt && \
-    rm -rf /tmp/comfyui-manager-cache-venv /tmp/comfyui-base.freeze /tmp/comfyui-manager.freeze && \
-    chmod -R u+rwX,go+rX,go-w /opt/uv-cache
+# Install ComfyUI-Manager dependencies into the baked application venv.
+RUN --mount=type=cache,id=comfyui-extensions-uv-build,target=/root/.cache/uv-build,sharing=locked \
+    test -n "${OFFLOADR_VENV}" && \
+    test -x "${OFFLOADR_VENV}/bin/python" && \
+    UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
+        --python "${OFFLOADR_VENV}/bin/python" \
+        matrix-nio \
+        -r /comfyui/manager_requirements.txt && \
+    "${OFFLOADR_VENV}/bin/python" -m compileall -q "${OFFLOADR_VENV}" && \
+    chmod -R u=rwX,go=rX "${OFFLOADR_VENV}"
 
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh

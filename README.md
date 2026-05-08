@@ -60,7 +60,7 @@ Additional arguments will be forwarded to ComfyUI. For example, to enable SageAt
 docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest --use-sage-attention
 ```
 
-On container start, the entrypoint creates the runtime virtual environment selected by `VIRTUAL_ENV`, defaulting to `/opt/venv`.
+On container start, the entrypoint activates the baked virtual environment at `/opt/venv`. Application dependencies are installed into that venv when the image is built.
 
 ### With persistent storage
 
