@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu
+ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu
 FROM ${BASE_IMAGE}
 
 WORKDIR /comfyui
@@ -10,12 +10,11 @@ RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sha
     test -x "${OFFLOADR_VENV}/bin/python" && \
     UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
         --python "${OFFLOADR_VENV}/bin/python" \
-        -r requirements.cached.txt && \
-    "${OFFLOADR_VENV}/bin/python" -m compileall -q "${OFFLOADR_VENV}" && \
-    chmod -R u=rwX,go=rX "${OFFLOADR_VENV}"
+        -r requirements.cached.txt
 
 # Allow cache invalidation of ComfyUI version even if the ref has not changed
 ARG REFRESH_COMFYUI=0
+RUN echo "${REFRESH_COMFYUI}" >/tmp/comfyui-refresh
 
 # Install ComfyUI
 ARG COMFYUI_VERSION=master
@@ -30,9 +29,7 @@ RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sha
     test -x "${OFFLOADR_VENV}/bin/python" && \
     UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
         --python "${OFFLOADR_VENV}/bin/python" \
-        -r requirements.txt && \
-    "${OFFLOADR_VENV}/bin/python" -m compileall -q "${OFFLOADR_VENV}" && \
-    chmod -R u=rwX,go=rX "${OFFLOADR_VENV}"
+        -r requirements.txt
 
 # ComfyUI defaults to port 8188
 EXPOSE 8188

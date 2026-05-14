@@ -152,7 +152,7 @@ jobs:
 
       - name: Update gist-backed badge
         if: github.event_name != 'pull_request' && steps.fetch.outputs.skip != 'true' && steps.existing.outputs.skip_update != 'true'
-        uses: schneegans/dynamic-badges-action@v1.7.0
+        uses: schneegans/dynamic-badges-action@v1.8.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: ${{ env.GIST_ID }}
