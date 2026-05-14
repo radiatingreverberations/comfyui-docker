@@ -42,7 +42,7 @@ jobs:
       BASE_FLAVOR: ${{ inputs.base_flavor }}
       SSH_HOST_ED25519_KEY_B64: ${{ secrets.SSH_HOST_ED25519_KEY_B64 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build (flavor=${{ inputs.base_flavor }})
         uses: ./.github/actions/bake-build
         with:

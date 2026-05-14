@@ -9,15 +9,17 @@ jobs:
   get-comfyui-latest-release:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.fetch.outputs.release }}
+      tag: ${{ steps.fetch.outputs.tag }}
     steps:
+      - uses: actions/checkout@v6
       - name: Get latest release
         id: fetch
-        uses: pozetroninc/github-action-get-latest-release@v0.8.0
-        with:
-          owner: comfyanonymous
-          repo: ComfyUI
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag=$(bash .github/scripts/resolve-comfyui-latest-release.sh)
+          echo "Latest ComfyUI release: $tag"
+          printf 'tag=%s\n' "$tag" >>"$GITHUB_OUTPUT"
 
   build-comfyui-master:
     concurrency:

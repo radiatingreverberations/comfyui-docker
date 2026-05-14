@@ -25,7 +25,7 @@ jobs:
       extra_tag_needed: ${{ steps.compare.outputs.extra_tag_needed }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install skopeo + jq + gh
         run: |

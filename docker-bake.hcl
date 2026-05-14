@@ -4,14 +4,17 @@ variable "DOCKER_REGISTRY_URL" {
 variable "COMFYUI_VERSION" {
     default = "master"
 }
+variable "REFRESH_COMFYUI" {
+    default = "0"
+}
 variable "CPU_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.10.0-cpu"
+    default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu"
 }
 variable "AMD_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.10.0-rocm7.1.1"
+    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.11.0-rocm7.2.3"
 }
 variable "NVIDIA_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.10.0-cuda13.0.2"
+    default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.11.0-cuda13.0.3"
 }
 variable "IMAGE_LABEL" {
     default = "latest"
@@ -41,6 +44,7 @@ target "comfyui-base" {
     dockerfile = "dockerfile.base"
     args = {
         COMFYUI_VERSION = "${COMFYUI_VERSION}"
+        REFRESH_COMFYUI = "${REFRESH_COMFYUI}"
         BASE_IMAGE      = BASE_FLAVOR == "nvidia" ? NVIDIA_BASE_IMAGE : BASE_FLAVOR == "amd" ? AMD_BASE_IMAGE : CPU_BASE_IMAGE
     }
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
