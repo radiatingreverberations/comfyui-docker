@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import os
 import re
-import subprocess
 import sys
-import tempfile
 from collections import defaultdict
 from importlib import metadata
 from pathlib import Path
@@ -12,10 +10,8 @@ from pathlib import Path
 from packaging.markers import default_environment
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
-from packaging.version import Version
 
 
-UPPER_BOUND_OPERATORS = {"<", "<=", "~="}
 NAME_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)")
 
 
@@ -42,24 +38,25 @@ def active_lines(path: Path) -> list[str]:
     return lines
 
 
-def active_installed_upper_bounds() -> dict[str, list[str]]:
+def active_installed_dependency_constraints() -> dict[str, tuple[str, list[str]]]:
     env = default_environment()
-    bounds: dict[str, list[str]] = defaultdict(list)
+    constraints: dict[str, tuple[str, list[str]]] = {}
 
     for dist in metadata.distributions():
         for raw_requirement in dist.requires or []:
             requirement = Requirement(raw_requirement)
             if requirement.marker is not None and not requirement.marker.evaluate(env):
                 continue
-            if not any(
-                specifier.operator in UPPER_BOUND_OPERATORS
-                for specifier in requirement.specifier
-            ):
+            if not requirement.specifier:
                 continue
 
-            bounds[normalize_name(requirement.name)].append(str(requirement.specifier))
+            name = normalize_name(requirement.name)
+            display_name, specifiers = constraints.setdefault(
+                name, (requirement.name, [])
+            )
+            specifiers.append(str(requirement.specifier))
 
-    return bounds
+    return constraints
 
 
 def direct_requirements(paths: list[Path]) -> dict[str, list[str]]:
@@ -74,62 +71,6 @@ def direct_requirements(paths: list[Path]) -> dict[str, list[str]]:
             requirements[normalize_name(requirement.name)].append(line)
 
     return requirements
-
-
-def manager_style_compile(
-    requirement_line: str, requirements_path: Path, manager_requirements_path: Path
-) -> str | None:
-    with tempfile.TemporaryDirectory(prefix="dependency-risk-") as tmp:
-        tmp_path = Path(tmp)
-        input_path = tmp_path / "node-requirements.txt"
-        output_path = tmp_path / "resolved-requirements.txt"
-        input_path.write_text(requirement_line + "\n")
-
-        command = [
-            "uv",
-            "pip",
-            "compile",
-            str(input_path),
-            "--constraint",
-            str(requirements_path),
-        ]
-        if manager_requirements_path.exists():
-            command.extend(["--constraint", str(manager_requirements_path)])
-        command.extend(
-            [
-                "--python",
-                sys.executable,
-                "--output-file",
-                str(output_path),
-                "--quiet",
-            ]
-        )
-
-        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
-        if result.returncode != 0:
-            raise RuntimeError(result.stderr.strip() or result.stdout.strip())
-
-        name = normalize_name(Requirement(requirement_line).name)
-        for line in active_lines(output_path):
-            resolved_requirement = Requirement(line)
-            if normalize_name(resolved_requirement.name) != name:
-                continue
-            for specifier in resolved_requirement.specifier:
-                if specifier.operator == "==":
-                    return specifier.version
-
-    return None
-
-
-def failed_bounds(name: str, resolved_version: str, bounds: list[str]) -> list[str]:
-    version = Version(resolved_version)
-    return [
-        specifier
-        for specifier in bounds
-        if not Requirement(f"{name}{specifier}").specifier.contains(
-            version, prereleases=True
-        )
-    ]
 
 
 def existing_constraints(path: Path) -> dict[str, str]:
@@ -153,29 +94,26 @@ def generate_constraints(base_path: Path, output_path: Path) -> dict[str, str]:
             base_path / "requirements.cached.txt",
         ]
     )
-    bounds = active_installed_upper_bounds()
+    dependency_constraints = active_installed_dependency_constraints()
     constraints = existing_constraints(output_path)
 
-    for name in sorted(bounds):
-        requirement_line = direct[name][0] if name in direct else name
-        resolved_version = manager_style_compile(
-            requirement_line, requirements_path, manager_requirements_path
-        )
-        if resolved_version is None:
-            continue
-
-        violating_bounds = failed_bounds(name, resolved_version, bounds[name])
-        if not violating_bounds:
-            continue
-
-        direct_requirement = Requirement(requirement_line)
+    for name in sorted(dependency_constraints):
+        display_name, installed_specifiers = dependency_constraints[name]
         specifier_parts = [
-            part
-            for part in [str(direct_requirement.specifier), *violating_bounds]
-            if part
+            *(
+                [str(Requirement(direct[name][0]).specifier)]
+                if name in direct
+                else []
+            ),
+            *installed_specifiers,
         ]
+        if name in constraints:
+            specifier_parts.append(str(Requirement(constraints[name]).specifier))
+            display_name = Requirement(constraints[name]).name
+
+        specifier_parts = [part for part in specifier_parts if part]
         combined_specifier = SpecifierSet(",".join(specifier_parts))
-        constraints[name] = f"{direct_requirement.name}{combined_specifier}"
+        constraints[name] = f"{display_name}{combined_specifier}"
 
     return constraints
 
@@ -215,7 +153,7 @@ def main() -> int:
     header = [
         "# Generated during image build from installed package metadata.",
         "# These constraints prevent Manager-style dependency sync from selecting",
-        "# versions outside upper bounds declared by already-installed packages.",
+        "# versions outside bounds declared by already-installed packages.",
     ]
     lines = header + [constraints[name] for name in sorted(constraints)]
     output_path.write_text("\n".join(lines) + "\n")

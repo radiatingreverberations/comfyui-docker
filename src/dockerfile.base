@@ -31,7 +31,7 @@ RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sha
         --python "${OFFLOADR_VENV}/bin/python" \
         -r requirements.txt
 
-# Make ComfyUI-Manager's explicit uv-sync constraints see generated caps too.
+# Make ComfyUI-Manager's explicit uv-sync constraints see generated bounds too.
 COPY generate_requirements_constraints.py generate_requirements_constraints.py
 RUN "${OFFLOADR_VENV}/bin/python" generate_requirements_constraints.py \
         /opt/offloadr/constraints/comfyui.txt \
