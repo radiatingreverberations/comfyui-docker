@@ -19,6 +19,13 @@ RUN --mount=type=cache,id=comfyui-extensions-uv-build,target=/root/.cache/uv-bui
         matrix-nio \
         -r /comfyui/manager_requirements.txt
 
+# Include upper bounds declared by Manager dependencies in runtime uv constraints.
+COPY generate_requirements_constraints.py generate_requirements_constraints.py
+RUN "${OFFLOADR_VENV}/bin/python" generate_requirements_constraints.py \
+        /opt/offloadr/constraints/comfyui.txt \
+        requirements.txt && \
+    rm generate_requirements_constraints.py
+
 # Add entrypoint script
 COPY entrypoint.extensions.sh entrypoint.extensions.sh
 RUN sed -i 's/\r$//' entrypoint.extensions.sh
