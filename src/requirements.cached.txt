@@ -1,9 +1,9 @@
 aiohttp>=3.11.8
 alembic
-av>=14.2.0
+av>=16.0.0
 blake3
-comfy-aimdo==0.3.0
-comfy-kitchen>=0.2.8
+comfy-aimdo>=0.4.10
+comfy-kitchen>=0.2.10
 einops
 filelock
 glfw
