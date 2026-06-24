@@ -53,4 +53,5 @@ jobs:
           registry: ${{ env.REGISTRY }}
           docker_registry_url: ${{ env.DOCKER_REGISTRY_URL }}
           registry_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           extra_set: ${{ inputs.extra_set }}
