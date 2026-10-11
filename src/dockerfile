@@ -65,7 +65,7 @@ RUN --mount=type=cache,id=comfyui-extensions-uv-build,target=/root/.cache/uv-bui
     test -x "${OFFLOADR_VENV}/bin/python" && \
     UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
         --python "${OFFLOADR_VENV}/bin/python" \
-        matrix-nio -r manager_requirements.txt
+        -r manager_requirements.txt
 RUN --mount=type=bind,source=generate_requirements_constraints.py,target=/tmp/generate_requirements_constraints.py \
     "${OFFLOADR_VENV}/bin/python" /tmp/generate_requirements_constraints.py \
         /opt/offloadr/constraints/comfyui.txt requirements.txt

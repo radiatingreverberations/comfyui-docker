@@ -27,9 +27,23 @@ These images are currently published to the GitHub Container Registry:
 
 |Image|Additional installed components|
 |-----|-------------------------------|
-|`comfyui-base`|[xFormers](https://github.com/facebookresearch/xformers), [FlashAttention-2](https://github.com/Dao-AILab/flash-attention), [SageAttention2++](https://github.com/thu-ml/SageAttention), [Nunchaku](https://github.com/nunchaku-tech/nunchaku)|
+|`comfyui-base`|NVIDIA images: [xFormers](https://github.com/facebookresearch/xformers), [SageAttention2++](https://github.com/thu-ml/SageAttention)|
 |`comfyui-extensions`|[ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager)|
 |`comfyui-ssh`|[OpenSSH server](https://www.openssh.com/)|
+
+The standard NVIDIA base retains xFormers and standalone SageAttention for
+compatibility. FlashAttention 3 and Nunchaku are no longer bundled. This requires
+publishing the updated `offloadr/base/nvidia-full` image before rebuilding these
+images; existing published images keep their original packages until rebuilt.
+
+Current ComfyUI releases also include Comfy Kitchen attention, available with
+`--use-ck-attention`. Compare its speed, VRAM use and output quality on your
+workflows before switching from `--use-sage-attention`.
+
+Hugging Face downloads use the transfer implementation supplied by
+`huggingface_hub`; the deprecated `hf_transfer` package is not added separately.
+Manager's optional Matrix sharing feature requires installing `matrix-nio` in a
+derived image; normal Manager operation does not require it.
 
 ## Available tags
 
@@ -118,6 +132,16 @@ When running Docker images on Windows, it most likely runs on a Linux VM under W
 
 ## Running on a cloud provider
 
+The NVIDIA images use PyTorch 2.14.1 and CUDA 13.0.3. The host supplies the NVIDIA
+driver; its installed CUDA Toolkit does not need to match the container. On
+Vast.ai, QuickPod, RunPod, Shadeform and similar services, choose a host
+advertising CUDA 13.0 or newer (driver branch R580 or newer). Check the actual
+driver capability before renting; a GPU model or template's installed CUDA
+Toolkit version alone does not establish compatibility. Hosts below CUDA 13.0
+need a separately maintained older runtime. See
+[NVIDIA's compatibility documentation](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)
+for driver requirements and PTX/JIT limitations.
+
 If you want to run ComfyUI on a cloud provider without exposing the web UI directly, use the `ssh` image and connect through an SSH tunnel. The full setup and security notes are documented in [SSH.md](SSH.md).
 
 ## Building
@@ -132,9 +156,24 @@ By default local builds consume:
 
 * `ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu`
 * `ghcr.io/offloadr/base/amd-core:py3.12-torch2.11.0-rocm7.2.3`
-* `ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.11.0-cuda13.0.3`
+* `ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.14.1-cuda13.0.3`
 
 To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.
+
+Publish the new PyTorch 2.14.1 base in `offloadr/base` before building these
+NVIDIA images.
+
+For Hopper GPUs (H100/H800), the base-image repository also provides an opt-in
+`nvidia-hopper` build with FlashAttention 3. After publishing that base, select it
+for a custom ComfyUI build:
+
+```shell
+NVIDIA_BASE_IMAGE=ghcr.io/offloadr/base/nvidia-hopper:py3.12-torch2.14.1-cuda13.0.3 BASE_FLAVOR=nvidia docker buildx bake
+```
+
+FlashAttention 3 can serve xFormers on supported Hopper hardware. It does not
+provide the `flash_attn` module expected by ComfyUI's `--use-flash-attention`
+option.
 
 All three image variants are targets in `src/dockerfile`. Their dependency stages
 receive only upstream requirements files; ComfyUI source is copied near the end of

@@ -14,7 +14,7 @@ variable "AMD_BASE_IMAGE" {
     default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.11.0-rocm7.2.3"
 }
 variable "NVIDIA_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.11.0-cuda13.0.3"
+    default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.14.1-cuda13.0.3"
 }
 variable "IMAGE_LABEL" {
     default = "latest"
