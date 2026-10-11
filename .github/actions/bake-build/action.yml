@@ -93,6 +93,7 @@ runs:
       with:
         push: ${{ inputs.push == 'true' }}
         set: |
+          *.args.COMFYUI_VERSION=${{ steps.comfyui_ref.outputs.sha }}
           *.args.REFRESH_COMFYUI=${{ steps.comfyui_ref.outputs.sha }}
           *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
           *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}

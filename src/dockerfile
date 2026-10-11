@@ -1,0 +1,96 @@
+# syntax=docker/dockerfile:1
+
+ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu
+
+# Keep the changing upstream archive out of the runtime image and dependency
+# stages. Only requirements files cross into the dependency stages below.
+FROM ${BASE_IMAGE} AS comfyui-source
+ARG REFRESH_COMFYUI=0
+RUN echo "${REFRESH_COMFYUI}" >/tmp/comfyui-refresh
+ARG COMFYUI_VERSION=master
+ADD https://github.com/comfyanonymous/ComfyUI/archive/${COMFYUI_VERSION}.tar.gz /tmp/comfyui.tar.gz
+RUN mkdir -p /comfyui && \
+    tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
+    rm /tmp/comfyui.tar.gz
+
+# Normalize local scripts once, independently of upstream source changes.
+FROM ${BASE_IMAGE} AS runtime-files
+COPY --chmod=755 runtime-venv.sh entrypoint.base.sh entrypoint.extensions.sh \
+    entrypoint.ssh.sh bake_ssh_host_key.sh download_workflow_models.py /runtime/
+RUN sed -i 's/\r$//' /runtime/*
+
+FROM ${BASE_IMAGE} AS base-dependencies
+WORKDIR /comfyui
+
+# Install common dependencies that are typically not ComfyUI version specific.
+COPY requirements.cached.txt requirements.cached.txt
+RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sharing=locked \
+    test -n "${OFFLOADR_VENV}" && \
+    test -x "${OFFLOADR_VENV}/bin/python" && \
+    UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
+        --python "${OFFLOADR_VENV}/bin/python" \
+        -r requirements.cached.txt
+
+# COPY caches by file contents: a source-only update leaves this large layer
+# reusable, even when the source stage was rebuilt for a different commit.
+COPY --from=comfyui-source /comfyui/requirements.txt requirements.txt
+RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sharing=locked \
+    test -n "${OFFLOADR_VENV}" && \
+    test -x "${OFFLOADR_VENV}/bin/python" && \
+    UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
+        --python "${OFFLOADR_VENV}/bin/python" \
+        -r requirements.txt
+
+COPY --from=comfyui-source /comfyui/manager_requirements.txt manager_requirements.txt
+# Preserve the generated bounds used by Manager's explicit uv-sync constraints.
+RUN --mount=type=bind,source=generate_requirements_constraints.py,target=/tmp/generate_requirements_constraints.py \
+    "${OFFLOADR_VENV}/bin/python" /tmp/generate_requirements_constraints.py \
+        /opt/offloadr/constraints/comfyui.txt requirements.txt
+ENV UV_CONSTRAINT="${UV_CONSTRAINT} /opt/offloadr/constraints/comfyui.txt"
+
+EXPOSE 8188
+ENV PYTHONUNBUFFERED=1
+ENV XFORMERS_IGNORE_FLASH_VERSION_CHECK=1
+COPY --link --from=runtime-files /runtime/runtime-venv.sh /runtime/entrypoint.base.sh /comfyui/
+ENTRYPOINT ["./entrypoint.base.sh"]
+
+# Build each flavor's additions before copying any application source.
+FROM base-dependencies AS extensions-dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+ENV COMFYUI_PATH=/comfyui
+RUN --mount=type=cache,id=comfyui-extensions-uv-build,target=/root/.cache/uv-build,sharing=locked \
+    test -n "${OFFLOADR_VENV}" && \
+    test -x "${OFFLOADR_VENV}/bin/python" && \
+    UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
+        --python "${OFFLOADR_VENV}/bin/python" \
+        matrix-nio -r manager_requirements.txt
+RUN --mount=type=bind,source=generate_requirements_constraints.py,target=/tmp/generate_requirements_constraints.py \
+    "${OFFLOADR_VENV}/bin/python" /tmp/generate_requirements_constraints.py \
+        /opt/offloadr/constraints/comfyui.txt requirements.txt
+COPY --link --from=runtime-files /runtime/entrypoint.extensions.sh /comfyui/
+ENTRYPOINT ["./entrypoint.extensions.sh"]
+
+FROM extensions-dependencies AS ssh-dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssh-server curl rsync && \
+    rm -rf /var/lib/apt/lists/*
+COPY --link --from=runtime-files /runtime/bake_ssh_host_key.sh /usr/local/bin/bake_ssh_host_key.sh
+RUN --mount=type=secret,id=SSH_HOST_ED25519_KEY_B64,required=false /usr/local/bin/bake_ssh_host_key.sh
+EXPOSE 2222
+COPY --link --from=runtime-files /runtime/download_workflow_models.py /usr/local/bin/download_workflow_models.py
+COPY --link --from=runtime-files /runtime/entrypoint.ssh.sh /comfyui/
+ENV SSH_USER=""
+ENTRYPOINT ["./entrypoint.ssh.sh"]
+
+# Source is the final layer in every image. Keep the dependency stages' generated
+# requirements instead of overwriting them with the upstream originals.
+FROM extensions-dependencies AS comfyui-extensions
+COPY --link --from=comfyui-source --exclude=requirements.txt --exclude=manager_requirements.txt /comfyui/ /comfyui/
+
+FROM ssh-dependencies AS comfyui-ssh
+COPY --link --from=comfyui-source --exclude=requirements.txt --exclude=manager_requirements.txt /comfyui/ /comfyui/
+
+FROM base-dependencies AS comfyui-base
+COPY --link --from=comfyui-source --exclude=requirements.txt --exclude=manager_requirements.txt /comfyui/ /comfyui/

@@ -136,6 +136,28 @@ By default local builds consume:
 
 To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.
 
+All three image variants are targets in `src/dockerfile`. Their dependency stages
+receive only upstream requirements files; ComfyUI source is copied near the end of
+each image. Updating source without changing requirements reuses the Python, Git,
+Manager, and SSH installation layers. Dependency or base-image updates can still
+require larger downloads. The downloaded source archive stays in a build stage
+and is not included in the published images.
+
+CI builds the resolved ComfyUI commit SHA, so the source matches the image's
+`comfyui.sha` label even if the upstream branch moves during a build.
+
+To verify layer reuse, select two ComfyUI commit SHAs with identical
+`requirements.txt` and `manager_requirements.txt`, then run:
+
+```shell
+python tests/check_layer_reuse.py <before-sha> <after-sha> --flavor nvidia
+```
+
+This builds all three variants locally and checks that only their source layer
+changes, then removes its test images even if the check fails. Use `--keep-images`
+to retain them for debugging. The first build may download the base image and
+Python dependencies; Docker's build cache remains available for reuse.
+
 ## Image details
 
 ### ComfyUI base image

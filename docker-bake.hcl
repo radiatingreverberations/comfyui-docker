@@ -39,47 +39,36 @@ group "default" {
     ]
 }
 
-target "comfyui-base" {
+target "_common" {
     context    = "src"
-    dockerfile = "dockerfile.base"
+    dockerfile = "dockerfile"
     args = {
         COMFYUI_VERSION = "${COMFYUI_VERSION}"
         REFRESH_COMFYUI = "${REFRESH_COMFYUI}"
         BASE_IMAGE      = BASE_FLAVOR == "nvidia" ? NVIDIA_BASE_IMAGE : BASE_FLAVOR == "amd" ? AMD_BASE_IMAGE : CPU_BASE_IMAGE
     }
-    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     platforms  = ["linux/amd64"]
-    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
     cache-to   = ["type=inline"]
+}
+
+target "comfyui-base" {
+    inherits   = ["_common"]
+    target     = "comfyui-base"
+    tags       = ["${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
+    cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-base:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
 }
 
 target "comfyui-extensions" {
-    context    = "src"
-    dockerfile = "dockerfile.extensions"
-    contexts = {
-        comfyui-base = "target:comfyui-base"
-    }
-    args = {
-        COMFYUI_BASE_IMAGE = "comfyui-base"
-    }
+    inherits   = ["_common"]
+    target     = "comfyui-extensions"
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-extensions:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
-    platforms  = ["linux/amd64"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-extensions:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
-    cache-to   = ["type=inline"]
 }
 
 target "comfyui-ssh" {
-    context    = "src"
-    dockerfile = "dockerfile.ssh"
-    contexts = {
-        comfyui-extensions = "target:comfyui-extensions"
-    }
-    args = {
-        COMFYUI_EXTENSIONS_IMAGE = "comfyui-extensions"
-    }
+    inherits   = ["_common"]
+    target     = "comfyui-ssh"
     secret     = ["id=SSH_HOST_ED25519_KEY_B64,env=SSH_HOST_ED25519_KEY_B64"]
     tags       = ["${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
-    platforms  = ["linux/amd64"]
     cache-from = ["type=registry,ref=${DOCKER_REGISTRY_URL}comfyui-ssh:${notequal("nvidia", BASE_FLAVOR) ? "${BASE_FLAVOR}-" : ""}${IMAGE_LABEL}"]
-    cache-to   = ["type=inline"]
 }
