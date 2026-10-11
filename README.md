@@ -31,17 +31,14 @@ These images are currently published to the GitHub Container Registry:
 |`comfyui-extensions`|[ComfyUI-Manager](https://github.com/Comfy-Org/ComfyUI-Manager)|
 |`comfyui-ssh`|[OpenSSH server](https://www.openssh.com/)|
 
-The standard NVIDIA base retains xFormers and standalone SageAttention for
-compatibility. FlashAttention 3 and Nunchaku are no longer bundled. This requires
-publishing the updated `offloadr/base/nvidia-full` image before rebuilding these
-images; existing published images keep their original packages until rebuilt.
+The NVIDIA images include xFormers and SageAttention2++.
 
 Current ComfyUI releases also include Comfy Kitchen attention, available with
 `--use-ck-attention`. Compare its speed, VRAM use and output quality on your
 workflows before switching from `--use-sage-attention`.
 
 Hugging Face downloads use the transfer implementation supplied by
-`huggingface_hub`; the deprecated `hf_transfer` package is not added separately.
+`huggingface_hub`.
 Manager's optional Matrix sharing feature requires installing `matrix-nio` in a
 derived image; normal Manager operation does not require it.
 
@@ -160,12 +157,9 @@ By default local builds consume:
 
 To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.
 
-Publish the new PyTorch 2.14.1 base in `offloadr/base` before building these
-NVIDIA images.
-
 For Hopper GPUs (H100/H800), the base-image repository also provides an opt-in
-`nvidia-hopper` build with FlashAttention 3. After publishing that base, select it
-for a custom ComfyUI build:
+`nvidia-hopper` build with FlashAttention 3. Build that target in the base-image
+repository and select its tag for a custom ComfyUI build:
 
 ```shell
 NVIDIA_BASE_IMAGE=ghcr.io/offloadr/base/nvidia-hopper:py3.12-torch2.14.1-cuda13.0.3 BASE_FLAVOR=nvidia docker buildx bake
