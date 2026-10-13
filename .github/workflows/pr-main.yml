@@ -5,6 +5,12 @@ on:
     branches: [main]
 
 jobs:
+  check-layer-reuse:
+    uses: ./.github/workflows/check-layer-reuse.yml
+    permissions:
+      contents: read
+      packages: read
+
   build-pull-request-flavors:
     strategy:
       fail-fast: false

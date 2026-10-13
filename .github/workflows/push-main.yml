@@ -6,6 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-layer-reuse:
+    uses: ./.github/workflows/check-layer-reuse.yml
+    permissions:
+      contents: read
+      packages: read
+
   get-comfyui-latest-release:
     runs-on: ubuntu-latest
     outputs:
@@ -22,6 +28,7 @@ jobs:
           printf 'tag=%s\n' "$tag" >>"$GITHUB_OUTPUT"
 
   build-comfyui-master:
+    needs: [check-layer-reuse]
     concurrency:
       group: build-master
       cancel-in-progress: true
@@ -36,7 +43,7 @@ jobs:
     secrets: inherit
 
   build-comfyui-latest-release:
-    needs: [get-comfyui-latest-release]
+    needs: [get-comfyui-latest-release, check-layer-reuse]
     concurrency:
       group: build-latest
       cancel-in-progress: true

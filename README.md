@@ -172,9 +172,13 @@ option.
 All three image variants are targets in `src/dockerfile`. Their dependency stages
 receive only upstream requirements files; ComfyUI source is copied near the end of
 each image. Updating source without changing requirements reuses the Python, Git,
-Manager, and SSH installation layers. Dependency or base-image updates can still
-require larger downloads. The downloaded source archive stays in a build stage
-and is not included in the published images.
+Manager, and SSH installation layers. A cached dependency baseline also contains
+the large frontend, workflow templates and documentation packages. Upstream
+requirements select the final installed versions; updates install changed
+packages above that baseline instead of reinstalling all template media.
+Dependency or base-image updates can still require larger downloads. The
+downloaded source archive stays in a build stage and is not included in the
+published images.
 
 CI builds the resolved ComfyUI commit SHA, so the source matches the image's
 `comfyui.sha` label even if the upstream branch moves during a build.
@@ -190,6 +194,12 @@ This builds all three variants locally and checks that only their source layer
 changes, then removes its test images even if the check fails. Use `--keep-images`
 to retain them for debugging. The first build may download the base image and
 Python dependencies; Docker's build cache remains available for reuse.
+
+To check a small upstream dependency update, add `--requirements-change`. This
+checks baseline reuse, limits the upstream requirements installation layer to
+128 MiB, and verifies installed package requirements in both images. GitHub runs
+both source-only and dependency-update checks before publishing repository
+changes.
 
 ## Image details
 

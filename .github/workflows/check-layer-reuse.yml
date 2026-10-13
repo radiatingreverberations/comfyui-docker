@@ -1,0 +1,43 @@
+name: Check ComfyUI update layer reuse
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  layer-reuse:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Keep BuildKit cache on the runner's data disk
+        run: |
+          sudo mkdir -p /mnt/buildkit-state
+          sudo docker volume create \
+            --driver local \
+            --opt type=none \
+            --opt device=/mnt/buildkit-state \
+            --opt o=bind \
+            buildx_buildkit_ci0_state
+      - uses: docker/setup-buildx-action@v4
+        with:
+          name: ci
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check source-only updates on NVIDIA images
+        run: |
+          python3 tests/check_layer_reuse.py \
+            7f7fd918ed0815c5d5ef2ccfe44bfc8e72cfd217 \
+            e8665ca8e4089ab917567cdb491308e1397663d4 \
+            --flavor nvidia
+      - name: Check the embedded-docs update on NVIDIA images
+        run: |
+          python3 tests/check_layer_reuse.py \
+            e8665ca8e4089ab917567cdb491308e1397663d4 \
+            12081cf9b8cb2c8128e32f689aabc8ac4688fde7 \
+            --flavor nvidia --requirements-change
