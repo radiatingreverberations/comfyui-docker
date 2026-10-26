@@ -12,6 +12,9 @@ ADD https://github.com/comfyanonymous/ComfyUI/archive/${COMFYUI_VERSION}.tar.gz 
 RUN mkdir -p /comfyui && \
     tar -xzf /tmp/comfyui.tar.gz -C /comfyui --strip-components=1 && \
     rm /tmp/comfyui.tar.gz
+RUN --mount=type=bind,source=extract_kernel_requirements.py,target=/tmp/extract_kernel_requirements.py \
+    python /tmp/extract_kernel_requirements.py \
+        /comfyui/requirements.txt /tmp/requirements.kernels.txt
 
 # Normalize local scripts once, independently of upstream source changes.
 FROM ${BASE_IMAGE} AS runtime-files
@@ -32,7 +35,16 @@ RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sha
         --python "${OFFLOADR_VENV}/bin/python" \
         -r requirements.cached.txt
 
-FROM cached-dependencies AS base-dependencies
+# Native kernel wheels are large and pinned by upstream. Cache their selected
+# versions separately so docs or other dependency changes do not recopy them.
+FROM cached-dependencies AS kernel-dependencies
+COPY --from=comfyui-source /tmp/requirements.kernels.txt requirements.kernels.txt
+RUN --mount=type=cache,id=comfyui-base-uv-build,target=/root/.cache/uv-build,sharing=locked \
+    UV_CACHE_DIR=/root/.cache/uv-build uv pip install \
+        --python "${OFFLOADR_VENV}/bin/python" \
+        -r requirements.kernels.txt
+
+FROM kernel-dependencies AS base-dependencies
 
 # COPY caches by file contents. Source-only updates reuse this layer; requirements
 # updates retain unchanged packages from the baseline instead of reinstalling them.

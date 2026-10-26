@@ -12,6 +12,8 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v6
+      - name: Check native kernel requirement extraction
+        run: python3 -m unittest discover -s tests -p "test_*.py"
       - name: Keep BuildKit cache on the runner's data disk
         run: |
           sudo mkdir -p /mnt/buildkit-state
