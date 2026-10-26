@@ -8,10 +8,10 @@ variable "REFRESH_COMFYUI" {
     default = "0"
 }
 variable "CPU_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu"
+    default = "ghcr.io/offloadr/base/cpu-core:py3.12-torch2.14.1-cpu"
 }
 variable "AMD_BASE_IMAGE" {
-    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.11.0-rocm7.2.3"
+    default = "ghcr.io/offloadr/base/amd-core:py3.12-torch2.14.1-rocm7.2.4"
 }
 variable "NVIDIA_BASE_IMAGE" {
     default = "ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.14.1-cuda13.0.3"
@@ -42,6 +42,7 @@ group "default" {
 target "_common" {
     context    = "src"
     dockerfile = "dockerfile"
+    pull       = true
     args = {
         COMFYUI_VERSION = "${COMFYUI_VERSION}"
         REFRESH_COMFYUI = "${REFRESH_COMFYUI}"

@@ -151,8 +151,8 @@ docker buildx bake
 
 By default local builds consume:
 
-* `ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu`
-* `ghcr.io/offloadr/base/amd-core:py3.12-torch2.11.0-rocm7.2.3`
+* `ghcr.io/offloadr/base/cpu-core:py3.12-torch2.14.1-cpu`
+* `ghcr.io/offloadr/base/amd-core:py3.12-torch2.14.1-rocm7.2.4`
 * `ghcr.io/offloadr/base/nvidia-full:py3.12-torch2.14.1-cuda13.0.3`
 
 To override them, pass one or more Bake variables such as `CPU_BASE_IMAGE`, `AMD_BASE_IMAGE`, or `NVIDIA_BASE_IMAGE`.
