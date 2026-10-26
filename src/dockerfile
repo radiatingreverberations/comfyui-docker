@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.11.0-cpu
+ARG BASE_IMAGE=ghcr.io/offloadr/base/cpu-core:py3.12-torch2.14.1-cpu
 
 # Keep the changing upstream archive out of the runtime image and dependency
 # stages. Only requirements files cross into the dependency stages below.
