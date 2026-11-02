@@ -23,7 +23,10 @@ The ComfyUI repository is checked periodically for updates, to ensure the images
 
 ## Available images
 
-These images are currently published to the GitHub Container Registry:
+These images are currently published to the GitHub Container Registry under `ghcr.io/offloadr`:
+
+> The images moved here from `ghcr.io/radiatingreverberations`. The old names still receive
+> every update for now, but new setups should use `ghcr.io/offloadr`.
 
 |Image|Additional installed components|
 |-----|-------------------------------|
@@ -60,7 +63,7 @@ Release-specific tags track the current image for that upstream ComfyUI release 
 ### Basic usage
 
 ```shell
-docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest
+docker run --gpus=all -p 8188:8188 ghcr.io/offloadr/comfyui-extensions:latest
 ```
 
 ### Additional options
@@ -68,7 +71,7 @@ docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-exten
 Additional arguments will be forwarded to ComfyUI. For example, to enable SageAttention:
 
 ```shell
-docker run --gpus=all -p 8188:8188 ghcr.io/radiatingreverberations/comfyui-extensions:latest --use-sage-attention
+docker run --gpus=all -p 8188:8188 ghcr.io/offloadr/comfyui-extensions:latest --use-sage-attention
 ```
 
 On container start, the entrypoint activates the baked virtual environment at `/opt/venv`. Application dependencies are installed into that venv when the image is built.
@@ -101,7 +104,7 @@ An example of putting it all together using [Docker Compose](https://docs.docker
 ```yaml
 services:
   comfyui:
-    image: ghcr.io/radiatingreverberations/comfyui-extensions:latest
+    image: ghcr.io/offloadr/comfyui-extensions:latest
     container_name: comfyui
     command:
       - --use-sage-attention

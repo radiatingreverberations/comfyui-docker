@@ -87,8 +87,13 @@ jobs:
             fi
           }
 
-          # Single user endpoint (repo is user-owned)
-          json="$(fetch_versions "/users/${OWNER}/packages/container/${PACKAGE}/versions")"
+          # Organizations and users have different package endpoints.
+          if [ "$(gh api "/users/${OWNER}" --jq .type)" = "Organization" ]; then
+            owner_path="orgs"
+          else
+            owner_path="users"
+          fi
+          json="$(fetch_versions "/${owner_path}/${OWNER}/packages/container/${PACKAGE}/versions")"
 
           # Ensure we have an array; if not, reset to empty array to avoid jq errors.
           if ! echo "$json" | jq -e 'type=="array"' >/dev/null 2>&1; then

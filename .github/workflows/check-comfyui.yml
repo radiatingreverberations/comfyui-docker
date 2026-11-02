@@ -146,3 +146,13 @@ jobs:
       contents: read
       packages: write
     secrets: inherit
+
+  mirror-extra-label:
+    needs: tag-extra-label
+    uses: ./.github/workflows/mirror-legacy-images.yml
+    with:
+      labels: "${{ inputs.extra_image_label }}"
+    permissions:
+      contents: read
+      packages: read
+    secrets: inherit

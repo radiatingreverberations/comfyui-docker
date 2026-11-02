@@ -1,0 +1,57 @@
+name: Mirror images to the legacy namespace
+
+# The images moved from ghcr.io/radiatingreverberations to the repository owner's namespace.
+# While the LEGACY_IMAGE_NAMESPACE variable is set, every published tag is also copied there,
+# digest for digest, so existing pulls of the old names keep getting updates.
+
+on:
+  workflow_call:
+    inputs:
+      labels:
+        description: "Space-separated image labels to mirror; flavor prefixes are added"
+        required: true
+        type: string
+
+jobs:
+  mirror:
+    if: ${{ vars.LEGACY_IMAGE_NAMESPACE != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Install skopeo
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y skopeo
+
+      - name: Copy images
+        env:
+          SOURCE_NAMESPACE: ghcr.io/${{ github.repository_owner }}
+          LEGACY_NAMESPACE: ${{ vars.LEGACY_IMAGE_NAMESPACE }}
+          LABELS: ${{ inputs.labels }}
+          SOURCE_USER: ${{ github.actor }}
+          SOURCE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEGACY_TOKEN: ${{ secrets.LEGACY_GHCR_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$LEGACY_TOKEN" ]; then
+            echo "::error::LEGACY_IMAGE_NAMESPACE is set but the LEGACY_GHCR_TOKEN secret is not." >&2
+            exit 1
+          fi
+          legacy_owner="${LEGACY_NAMESPACE#ghcr.io/}"
+
+          for label in $LABELS; do
+            for image in comfyui-base comfyui-extensions comfyui-ssh; do
+              for prefix in "" "cpu-" "amd-"; do
+                src="${SOURCE_NAMESPACE}/${image}:${prefix}${label}"
+                dst="${LEGACY_NAMESPACE}/${image}:${prefix}${label}"
+                echo "Mirroring $src -> $dst"
+                skopeo copy --all --retry-times 3 \
+                  --src-creds "${SOURCE_USER}:${SOURCE_TOKEN}" \
+                  --dest-creds "${legacy_owner}:${LEGACY_TOKEN}" \
+                  "docker://${src}" "docker://${dst}"
+              done
+            done
+          done
