@@ -61,6 +61,22 @@ runs:
         username: ${{ github.actor }}
         password: ${{ inputs.registry_token }}
 
+    # Build from the base image's current digest and record it, so an image whose base has
+    # since moved can be found by comparing labels.
+    - name: Pin the base image
+      id: base_image
+      shell: bash
+      run: |
+        set -euo pipefail
+        refs=$(docker buildx bake --print 2>/dev/null | jq -r '[.target[].args.BASE_IMAGE] | unique | .[]')
+        if [ "$(printf '%s\n' "$refs" | wc -l)" -ne 1 ]; then
+          echo "::error::Expected one base image for this flavor, got: $refs" >&2
+          exit 1
+        fi
+        digest=$(docker buildx imagetools inspect "$refs" --format '{{json .Manifest}}' | jq -r .digest)
+        echo "Base image $refs at $digest"
+        printf 'ref=%s\ndigest=%s\n' "$refs" "$digest" >>"$GITHUB_OUTPUT"
+
     - name: Fetch ComfyUI commit SHA
       id: comfyui_ref
       shell: bash
@@ -98,6 +114,9 @@ runs:
           *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
           *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}
           *.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          *.args.BASE_IMAGE=${{ steps.base_image.outputs.ref }}@${{ steps.base_image.outputs.digest }}
+          *.labels.org.opencontainers.image.base.name=${{ steps.base_image.outputs.ref }}
+          *.labels.org.opencontainers.image.base.digest=${{ steps.base_image.outputs.digest }}
           ${{ steps.comfyui_metadata.outputs.bake_set }}
           ${{ inputs.extra_set }}
         targets: ${{ steps.targets.outputs.list }}

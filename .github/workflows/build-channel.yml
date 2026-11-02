@@ -1,0 +1,54 @@
+name: Build a channel
+run-name: Build ${{ inputs.channel }}
+
+# Builds one image channel on request. The in-cluster image watcher dispatches this when the
+# channel's upstream commit or base image has moved; the run name tells it which channel a
+# queued or running build is for.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to build"
+        required: true
+        type: choice
+        options: [latest, master]
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+      extra_label: ${{ steps.ref.outputs.extra_label }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Resolve the ComfyUI ref
+        id: ref
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "$CHANNEL" = "latest" ]; then
+            tag=$(bash .github/scripts/resolve-comfyui-latest-release.sh)
+            echo "Latest ComfyUI release: $tag"
+            printf 'ref=%s\nextra_label=%s\n' "$tag" "$tag" >>"$GITHUB_OUTPUT"
+          else
+            printf 'ref=master\nextra_label=\n' >>"$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: resolve
+    concurrency:
+      group: build-${{ inputs.channel }}
+      cancel-in-progress: false
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      comfyui_ref: ${{ needs.resolve.outputs.ref }}
+      image_label: ${{ inputs.channel }}
+      extra_image_label: ${{ needs.resolve.outputs.extra_label }}
+      push_images: true
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
