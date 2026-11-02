@@ -97,6 +97,7 @@ runs:
           *.args.REFRESH_COMFYUI=${{ steps.comfyui_ref.outputs.sha }}
           *.labels.comfyui.ref=${{ inputs.comfyui_ref }}
           *.labels.comfyui.sha=${{ steps.comfyui_ref.outputs.sha }}
+          *.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
           ${{ steps.comfyui_metadata.outputs.bake_set }}
           ${{ inputs.extra_set }}
         targets: ${{ steps.targets.outputs.list }}

@@ -1,5 +1,5 @@
 variable "DOCKER_REGISTRY_URL" {
-    default = "ghcr.io/radiatingreverberations/"
+    default = "ghcr.io/offloadr/"
 }
 variable "COMFYUI_VERSION" {
     default = "master"
