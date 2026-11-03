@@ -5,8 +5,7 @@ on:
   workflow_run:
     workflows:
       - "Trigger builds on new commits to main"
-      - "Rebuild on ComfyUI master changes"
-      - "Rebuild on ComfyUI latest release changes"
+      - "Build a channel"
     types: [completed]
   # pull_request:                # Uncomment to enable PR preview runs
   #   branches: [ main ]
